@@ -995,26 +995,7 @@ function closeUpsell() {
   document.getElementById('upsellModalOverlay').style.display = 'none';
 }
 
-function openLicenseInput() {
-  if (isUnlocked) {
-    alert('✓ Already unlocked!');
-    return;
-  }
-  const key = prompt('Enter your license key:');
-  if (!key) return;
-  KeyAuthApp.init().then(() => {
-    KeyAuthApp.license(key).then(result => {
-      if (result) {
-        isUnlocked = true;
-        localStorage.setItem('theden_key', key);
-        alert('✓ Access granted!');
-      } else {
-        alert('Invalid key.');
-        document.getElementById('upsellModalOverlay').style.display = 'flex';
-      }
-    });
-  }).catch(() => alert('Invalid or expired key.'));
-}
+
 
 // ---- Form submit ----
 document.getElementById('receiptForm').addEventListener('submit', async function(e) {
