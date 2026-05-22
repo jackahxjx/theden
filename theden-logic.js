@@ -46,31 +46,6 @@ window.addEventListener('load', () => {
   }
 });
 
-afunction openLicenseInput() {
-  if (isUnlocked) { alert('✓ Already unlocked!'); return; }
-  const key = prompt('Enter your license key:');
-  if (!key) return;
-  keyauthLicense(key.trim()).then(data => {
-    if (data.success) {
-      isUnlocked = true;
-      localStorage.setItem('theden_key', key.trim());
-      alert('✓ Access granted!');
-    } else {
-      alert(data.message || 'Invalid key.');
-      document.getElementById('upsellModalOverlay').style.display = 'flex';
-    }
-  }).catch(() => alert('Could not connect. Try again.'));
-}
-
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('theden_key');
-  if (saved) {
-    keyauthLicense(saved).then(data => {
-      if (data.success) isUnlocked = true;
-    }).catch(() => {});
-  }
-});
-
 // ---- Currency list ----
 const CURRENCIES = [
   'USD','EUR','GBP','JPY','AUD','CAD','CHF','CNY',
