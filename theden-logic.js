@@ -1065,6 +1065,10 @@ document.getElementById('receiptForm').addEventListener('submit', async function
 
 // ---- Live canvas (paper receipts) ----
 function openLiveCanvas(brand) {
+  if (!isUnlocked) {
+    document.getElementById('upsellModalOverlay').style.display = 'flex';
+    return;
+  }
   document.getElementById('selectedBrand').value = brand;
 
   const container = document.getElementById('receiptContainer');
