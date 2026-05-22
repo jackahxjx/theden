@@ -5,14 +5,26 @@
 
 const BACKEND_URL = 'https://theden-six.vercel.app/api/generate-receipt';
 
-const KeyAuthApp = new KeyAuth(
-  "The Den",
-  "BoqHHoq9nD",
-  "ef841785b9ec5fadc6bd8e92b25ace96b8a74aba9d061f07938b2b5ee16f6caf",
-  "1.0"
-);
-
 let isUnlocked = false;
+let KeyAuthApp;
+
+window.addEventListener('load', () => {
+  KeyAuthApp = new KeyAuth(
+    "The Den",
+    "BoqHHoq9nD",
+    "ef841785b9ec5fadc6bd8e92b25ace96b8a74aba9d061f07938b2b5ee16f6caf",
+    "1.0"
+  );
+
+  const saved = localStorage.getItem('theden_key');
+  if (saved) {
+    KeyAuthApp.init().then(() => {
+      KeyAuthApp.license(saved).then(result => {
+        if (result) isUnlocked = true;
+      });
+    }).catch(() => {});
+  }
+});
 
 async function openLicenseInput() {
   if (isUnlocked) return;
