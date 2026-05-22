@@ -5,415 +5,160 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>theden | Receipt Generator</title>
-<!-- Libraries for functionality -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 <style>
-
-  /* --- CORE VARIABLES --- */
   :root {
-      --glass-bg: rgba(20, 20, 20, 0.6); /* Darker for better contrast */
+      --glass-bg: rgba(20, 20, 20, 0.6);
       --glass-border: rgba(255, 255, 255, 0.1);
-      --glass-highlight: rgba(255, 255, 255, 0.15);
       --glass-blur: blur(16px);
-      --accent-primary: #6366f1; /* A nice indigo for accents */
       --text-main: #ffffff;
       --text-muted: #9ca3af;
   }
-
   body { 
-    font-family: 'Inter', sans-serif; 
-    margin: 0; 
-    padding: 0; 
+    font-family: 'Inter', sans-serif; margin: 0; padding: 0; 
     background-color: #000000;
-    /* Abstract dark background */
     background-image: 
-      radial-gradient(circle at 50% -20%, rgba(40, 40, 50, 1) 0%, rgba(0, 0, 0, 1) 60%),
-      radial-gradient(circle at 90% 90%, rgba(30, 30, 40, 1) 0%, rgba(0, 0, 0, 1) 60%);
+      radial-gradient(circle at 50% -20%, rgba(40,40,50,1) 0%, rgba(0,0,0,1) 60%),
+      radial-gradient(circle at 90% 90%, rgba(30,30,40,1) 0%, rgba(0,0,0,1) 60%);
     color: var(--text-main);
-    overflow-x: hidden; 
-    min-height: 100vh;
+    overflow-x: hidden; min-height: 100vh;
   }
-
-  /* --- FLOATING LIQUID GLASS NAVBAR --- */
   .glass-navbar {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 700px;
-    padding: 14px 32px;
-    border-radius: 999px; /* Pill shape */
-    
-    /* Liquid Glass Effect */
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 700px; padding: 14px 32px; border-radius: 999px;
+    background: var(--glass-bg); backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 1000;
-    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3);
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 1000; transition: all 0.3s ease;
   }
-
   .glass-navbar:hover {
-    background: rgba(30, 30, 35, 0.8);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.5);
+    background: rgba(30,30,35,0.8); border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 15px 50px 0 rgba(0,0,0,0.5);
   }
-
   .glass-navbar .logo {
-    font-size: 22px; 
-    font-weight: 800; 
-    letter-spacing: -0.5px; 
-    text-transform: lowercase;
-    color: #fff;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 22px; font-weight: 800; letter-spacing: -0.5px; text-transform: lowercase;
+    color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px;
   }
-  
-  /* Little dot for the logo */
-  .logo-dot {
-      width: 8px; height: 8px; background: #fff; border-radius: 50%;
-      box-shadow: 0 0 10px #fff;
-  }
-
-  .glass-navbar .nav-actions {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-  }
-
+  .logo-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px #fff; }
+  .glass-navbar .nav-actions { display: flex; gap: 24px; align-items: center; }
   .glass-navbar .nav-item {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 20px;
+    background: transparent; border: none; color: var(--text-muted); font-size: 14px;
+    font-weight: 500; cursor: pointer; transition: all 0.2s ease;
+    display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px;
   }
-
-  .glass-navbar .nav-item:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  /* --- DASHBOARD & CARDS --- */
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 100px 20px 40px 20px; /* Clear navbar */
-  }
-
+  .glass-navbar .nav-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .container { max-width: 1400px; margin: 0 auto; padding: 100px 20px 40px 20px; }
   .section-title {
-    text-align: center;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 30px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    text-align: center; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 30px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
   }
-
   .section-title::after, .section-title::before {
-    content: '';
-    height: 1px;
-    width: 40px;
-    background: var(--glass-border);
+    content: ''; height: 1px; width: 40px; background: var(--glass-border);
   }
-
-  .dashboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 16px;
-    margin-bottom: 60px;
-  }
-
+  .dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-bottom: 60px; }
   .brand-card { 
-    aspect-ratio: 1/1;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+    aspect-ratio: 1/1; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 24px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; cursor: pointer; position: relative; overflow: hidden;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
-
-  /* Shine effect on hover */
   .brand-card::after {
-      content: "";
-      position: absolute;
-      top: 0; left: -100%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
-      transform: skewX(-20deg);
-      transition: 0.5s;
+    content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-20deg); transition: 0.5s;
   }
-  
-  .brand-card:hover::after {
-      left: 150%;
-      transition: 0.7s;
-  }
-
+  .brand-card:hover::after { left: 150%; transition: 0.7s; }
   .brand-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    transform: translateY(-5px) scale(1.02); background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.3);
   }
-
-  .brand-card img {
-    width: 40%;
-    height: 40%;
-    object-fit: contain;
-    margin-bottom: 12px;
-    filter: grayscale(100%) brightness(0.7);
-    transition: all 0.3s;
-    z-index: 2;
-  }
-
-  .brand-card:hover img {
-    filter: grayscale(0%) brightness(1);
-  }
-
-  .brand-card span {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: capitalize;
-    z-index: 2;
-  }
-
-  .brand-card:hover span {
-    color: #fff;
-  }
-  
+  .brand-card img { width: 40%; height: 40%; object-fit: contain; margin-bottom: 12px; filter: grayscale(100%) brightness(0.7); transition: all 0.3s; z-index: 2; }
+  .brand-card:hover img { filter: grayscale(0%) brightness(1); }
+  .brand-card span { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: capitalize; z-index: 2; }
+  .brand-card:hover span { color: #fff; }
   .paper-badge {
-      position: absolute;
-      top: -8px; 
-      left: 50%; 
-      transform: translateX(-50%); 
-      background: rgba(0, 0, 0, 0.6); 
-      border: 1px solid rgba(255, 255, 255, 0.1); 
-      padding: 2px 8px; 
-      border-radius: 12px; 
-      font-size: 9px; 
-      font-weight: 700; 
-      color: #fff; 
-      z-index: 3;
-      backdrop-filter: blur(4px);
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);
+    padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; color: #fff; z-index: 3;
+    backdrop-filter: blur(4px);
   }
-
-  /* --- MODALS (Glass) --- */
   .modal-overlay {
-    display: none; 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    z-index: 2000; 
-    justify-content: center; 
-    align-items: center;
-    animation: fadeIn 0.2s ease-out;
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000;
+    justify-content: center; align-items: center;
   }
-
-  @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-  }
-
   .modal-box {
-    width: 90%; 
-    max-width: 520px; 
-    max-height: 90vh; 
-    overflow-y: auto; 
-    background: rgba(20, 20, 25, 0.85); 
-    backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 24px; 
-    padding: 32px; 
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); 
-    position: relative;
-    animation: slideUp 0.3s ease-out;
-    color: #fff;
+    width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+    background: rgba(20,20,25,0.85); backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 32px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative;
+    animation: slideUp 0.3s ease-out; color: #fff;
   }
-
-  @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .close-btn {
+    position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: #fff; transition: all 0.2s; z-index: 10;
   }
-
-  .close-btn { 
-      position: absolute; 
-      top: 20px; 
-      right: 20px; 
-      background: rgba(255, 255, 255, 0.1); 
-      border: 1px solid rgba(255, 255, 255, 0.2); 
-      border-radius: 50%; 
-      width: 32px; 
-      height: 32px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      cursor: pointer; 
-      color: #fff; 
-      transition: all 0.2s; 
-      z-index: 10; 
-  }
-
-  .close-btn:hover { background: rgba(255, 255, 255, 0.3); }
-
-  /* --- FORMS --- */
+  .close-btn:hover { background: rgba(255,255,255,0.3); }
   .form-group { margin-bottom: 16px; }
   .form-group label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  
   input, select { 
-      width: 100%; 
-      padding: 12px; 
-      background: rgba(0, 0, 0, 0.3); 
-      border: 1px solid rgba(255, 255, 255, 0.1); 
-      border-radius: 8px; 
-      color: #fff; 
-      font-size: 14px; 
-      outline: none; 
-      transition: 0.2s; 
-      box-sizing: border-box; 
+    width: 100%; padding: 12px; background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;
+    font-size: 14px; outline: none; transition: 0.2s; box-sizing: border-box;
   }
-  
-  input:focus, select:focus { border-color: rgba(255, 255, 255, 0.5); background: rgba(0, 0, 0, 0.5); }
+  input:focus, select:focus { border-color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.5); }
   input::placeholder { color: #666; }
-
   .input-row { display: flex; gap: 10px; }
   .input-row input { flex: 1; }
   .input-row select { width: 80px; }
-
-  /* --- BUTTONS --- */
-  .btn { 
-      width: 100%; 
-      padding: 14px; 
-      border: none; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      font-size: 14px; 
-      font-weight: 600; 
-      transition: all 0.2s; 
-      margin-top: 10px;
-  }
-
+  .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; margin-top: 10px; }
   .btn-primary { background: #fff; color: #000; }
-  .btn-primary:hover { background: #e0e0e0; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
-
-  /* --- RECEIPT CANVAS (Hidden logic kept, styles adapted for Dark Mode) --- */
+  .btn-primary:hover { background: #e0e0e0; transform: translateY(-2px); }
   .receipt-canvas-wrapper {
-      width: 100%;
-      max-height: 60vh;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: flex;
-      justify-content: center;
-      background: #000;
-      border: 1px solid #333;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      position: relative;
+    width: 100%; max-height: 60vh; overflow-y: auto; overflow-x: hidden;
+    display: flex; justify-content: center; background: #000;
+    border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; position: relative;
   }
-
   .receipt-canvas {
-      width: 576px; 
-      height: 2160px; 
-      position: relative; 
-      background-image: url('https://res.cloudinary.com/dtwidxp58/image/upload/v1778269780/Sephora_Paper_tfkjlw.png'); 
-      background-size: 100% 100%;
-      background-repeat: no-repeat;
-      background-color: #fff;
-      font-family: 'Courier New', monospace;
-      font-size: 24px; 
-      color: #000;
-      flex-shrink: 0;
+    width: 576px; height: 2160px; position: relative;
+    background-image: url('https://res.cloudinary.com/dtwidxp58/image/upload/v1778269780/Sephora_Paper_tfkjlw.png');
+    background-size: 100% 100%; background-repeat: no-repeat; background-color: #fff;
+    font-family: 'Courier New', monospace; font-size: 24px; color: #000; flex-shrink: 0;
   }
-
-  /* --- WATERMARK (THE REBRAND) --- */
   .watermark-overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      /* CHANGED TEXT TO 'THEDEN' */
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><text x="50%" y="50%" fill="rgba(0,0,0,0.25)" font-size="22" font-family="sans-serif" font-weight="900" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45, 75, 75)">THEDEN</text></svg>');
-      pointer-events: none; 
-      z-index: 50;
-      display: flex; 
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><text x="50%" y="50%" fill="rgba(0,0,0,0.25)" font-size="22" font-family="sans-serif" font-weight="900" text-anchor="middle" dominant-baseline="middle" transform="rotate(-45, 75, 75)">THEDEN</text></svg>');
+    pointer-events: none; z-index: 50; display: flex;
   }
-
-  /* --- EDITABLE TEXT ON CANVAS --- */
   .live-text {
-      position: absolute; 
-      outline: none;
-      cursor: text;
-      background: rgba(0, 255, 136, 0.15); 
-      border-bottom: 1px dotted transparent;
-      white-space: nowrap; 
-      line-height: 1; 
-      min-width: 30px;
-      min-height: 1em; 
-      display: inline-block;
-      touch-action: pan-x pan-y; 
-      -webkit-user-modify: read-write-plaintext-only;
+    position: absolute; outline: none; cursor: text;
+    background: rgba(0,255,136,0.15); border-bottom: 1px dotted transparent;
+    white-space: nowrap; line-height: 1; min-width: 30px; min-height: 1em; display: inline-block;
+    touch-action: pan-x pan-y; -webkit-user-modify: read-write-plaintext-only;
   }
-  
-  .live-text:hover, .live-text:focus {
-      background: rgba(0, 255, 136, 0.3);
-      border-bottom: 1px dotted #000;
-  }
-
-  /* Hide green boxes during export */
-  .export-mode .live-text {
-      background: transparent !important;
-      border-bottom: none !important;
-  }
-  
-  /* Scrollbar Styling */
+  .live-text:hover, .live-text:focus { background: rgba(0,255,136,0.3); border-bottom: 1px dotted #000; }
+  .export-mode .live-text { background: transparent !important; border-bottom: none !important; }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: #0a0a0a; }
   ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
-  /* --- SPECIFIC COORDINATES (Untouched Logic) --- */
+  /* Receipt coordinates */
   #sx-item-productname { top: 559px; left: 85px; text-align: left; font-family: 'Arial', sans-serif; font-size: 59px; letter-spacing: 0.4px; line-height: 65px;}
   #sx-item-address { top: 389px; left: 85px; text-align: left; font-family: 'Arial', sans-serif; font-size: 32px; }
   #sx-item-ordernumber { top: 473px; right: 85px; text-align: right; font-family: 'Arial', sans-serif; font-size: 44px; }
   #sx-item-details { top: 741px; right: 85px; text-align: right; font-family: 'Arial', sans-serif; font-size: 25px; line-height: 43px; }
   #sx-item-price { top: 913px; right: 81px; text-align: right; font-family: 'Arial', sans-serif; font-size: 32px; line-height: 52px; }
   #sx-item-total { top: 1128px; right: 81px; text-align: right; font-family: 'Arial', sans-serif; font-size: 32px; line-height: 52px; }
-  
-  /* LV Coords */
   #lv-item-productname { top: 425px; left: 388px; text-align: left; font-family: 'Courier New', sans-serif; font-size: 34px; }
   #lv-item-sku { top: 425px; left: 200px; text-align: left; font-family: 'Courier New', sans-serif; font-size: 34px; }
   #lv-item-invoice { top: 288px; left: 59px; text-align: left; font-family: 'Courier New', sans-serif; font-size: 34px; }
@@ -431,8 +176,6 @@
   #lv-item-payment { top: 745px; left: 65px; text-align: left; font-family: 'Courier New', sans-serif; font-size: 34px; line-height: 37.2px;}
   #lv-item-address { top: 1628px; left: 65px; text-align: left; font-family: 'Arial', sans-serif; font-size: 28.8px; line-height: 32px;}
   #lv-item-address2 { top: 1628px; left: 908px; text-align: left; font-family: 'Arial', sans-serif; font-size: 28.8px; line-height: 32px;}
-
-  /* Apple Coords */
   #pos-item-apple-storename { top: 151px; left: 26px; font-size: 40px; }
   #pos-item-apple-storeurl { top: 392px; left: 26px; font-size: 40px; }
   #pos-item-apple-date { top: 498px; left: 26px; font-size: 40px; letter-spacing: 0.8px; }
@@ -443,17 +186,13 @@
   #pos-item-apple-card { top: 1019px; right: 26px; text-align: right; font-size: 43px; letter-spacing: -2px; }
   #pos-item-apple-date2 { top: 1152px; right: 26px; text-align: right; font-size: 43px; letter-spacing: -1.3px; }
   #pos-item-apple-reference { top: 1197px; right: 26px; text-align: right; font-size: 43px; letter-spacing: -1.3px; }
-
-  /* Chrome Hearts */
-  #pos-item-chromehearts-address  { top: 371px; right: 0px; width: 100%; text-align: center; font-size: 35px; letter-spacing: 0.8px; line-height: 37px; }
-  #pos-item-chromehearts-date  { top: 547px; right: 0px; width: 100%; text-align: center; font-size: 35px; letter-spacing: 0.7px; line-height: 37px; } 
-  #pos-item-chromehearts-sku  { top: 794px; left: 42px; font-size: 35px; letter-spacing: 1.2px; }
-  #pos-item-chromehearts-productname  { top: 833px; left: 42px; font-size: 35px; letter-spacing: 1.2px; }
-  #pos-item-chromehearts-price { top: 794px; right: 42px; text-align: right; font-size: 35px; letter-spacing: 0px; }
-  #pos-item-chromehearts-price2 { top: 941px; right: 42px; text-align: right; font-size: 35px; letter-spacing: 0px; line-height: 40px; }
-  #pos-item-chromehearts-price3 { top: 1130px; right: 42px; text-align: right; font-size: 35px; letter-spacing: 0px; line-height: 40px; }
-  
-  /* Harrods */
+  #pos-item-chromehearts-address { top: 371px; right: 0px; width: 100%; text-align: center; font-size: 35px; letter-spacing: 0.8px; line-height: 37px; }
+  #pos-item-chromehearts-date { top: 547px; right: 0px; width: 100%; text-align: center; font-size: 35px; letter-spacing: 0.7px; line-height: 37px; }
+  #pos-item-chromehearts-sku { top: 794px; left: 42px; font-size: 35px; letter-spacing: 1.2px; }
+  #pos-item-chromehearts-productname { top: 833px; left: 42px; font-size: 35px; letter-spacing: 1.2px; }
+  #pos-item-chromehearts-price { top: 794px; right: 42px; text-align: right; font-size: 35px; }
+  #pos-item-chromehearts-price2 { top: 941px; right: 42px; text-align: right; font-size: 35px; line-height: 40px; }
+  #pos-item-chromehearts-price3 { top: 1130px; right: 42px; text-align: right; font-size: 35px; line-height: 40px; }
   #pos-item-harrods-tendered { top: 874px; left: 10px; font-size: 34px; }
   #pos-item-harrods-name { top: 748px; left: 10px; font-size: 34px; }
   #pos-item-harrods-name2 { top: 772px; left: 31px; font-size: 34px; }
@@ -482,8 +221,6 @@
   #pos-item-harrods-panseq { top: 1047px; left: 184px; font-size: 34px; }
   #pos-item-harrods-aid { top: 1072px; left: 184px; font-size: 34px; }
   #pos-item-harrods-crypto { top: 1095px; left: 184px; font-size: 34px; }
-  
-  /* Prada */
   #prada-pos-item-name { top: 774px; left: 27px; font-size: 40px; }
   #prada-pos-item-storename { top: 420px; left: 0; width: 100%; text-align: center; font-size: 40px; }
   #prada-pos-item-storestreet { top: 460px; left: 0; width: 100%; text-align: center; font-size: 40px; }
@@ -500,11 +237,9 @@
   #prada-pos-item-card { top: 1193px; right: 28px; text-align: right; font-size: 40px; }
   #prada-pos-item-date2 { top: 1323px; right: 28px; text-align: right; font-size: 40px; }
   #prada-pos-item-reference { top: 1366px; right: 28px; text-align: right; font-size: 40px; }
-
-  /* Sepora (POS Default) */
   #pos-item-name { top: 428px; left: 16px; font-size: 34px; }
   #pos-item-sku { top: 456px; left: 16px; font-size: 34px; }
-  #pos-item-qty  { top: 455px; left: 185px; font-size: 34px; }
+  #pos-item-qty { top: 455px; left: 185px; font-size: 34px; }
   #pos-item-price { top: 455px; right: 50px; text-align: right; font-size: 34px; }
   #pos-item-price2 { top: 455px; right: 195px; text-align: right; font-size: 34px; }
   #pos-item-subtotal { top: 545px; right: 50px; text-align: right; font-size: 34px; }
@@ -529,489 +264,317 @@
   #pos-item-storecity { top: 320px; left: 0; width: 100%; text-align: center; font-size: 34px; }
   #pos-item-storephone { top: 348px; left: 0; width: 100%; text-align: center; font-size: 34px; }
 
-  /* STATS & TABLES (Visuals Kept) */
   .stats-container { max-width: 1000px; margin: 0 auto 30px auto; padding: 0 20px; position: relative; z-index: 10; }
   .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px; }
-  .stat-card { background: rgba(10, 10, 10, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+  .stat-card { background: rgba(10,10,10,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
   .stat-title { color: #888; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px; }
-  .stat-value { color: #fff; font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; font-family: 'Inter', sans-serif; }
+  .stat-value { color: #fff; font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
   .stat-trend { color: #00ff88; font-size: 12px; font-weight: 600; }
-  .activity-container { background: rgba(10, 10, 10, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); position: relative; }
+  .activity-container { background: rgba(10,10,10,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
   .activity-header { color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 20px; }
   .table-responsive { overflow-x: auto; }
   .activity-table { width: 100%; border-collapse: collapse; text-align: left; }
-  .activity-table th { text-align: center; color: #888; font-size: 11px; font-weight: 700; text-transform: uppercase; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-  .activity-table td { text-align: center; color: #ccc; font-size: 13px; font-weight: 500; padding: 16px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-  .status-pill { background: rgba(0, 255, 136, 0.1); color: #00ff88; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .activity-table th { text-align: center; color: #888; font-size: 11px; font-weight: 700; text-transform: uppercase; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .activity-table td { text-align: center; color: #ccc; font-size: 13px; font-weight: 500; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .status-pill { background: rgba(0,255,136,0.1); color: #00ff88; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 
-  /* Mobile Fixes */
   @media (max-width: 768px) {
     .stats-grid { grid-template-columns: 1fr; gap: 10px; }
     .glass-navbar { width: 95%; padding: 10px 20px; }
     .dashboard { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   }
-
 </style>
 </head>
 <body>
 
-  <!-- Floating Navbar -->
-  <nav class="glass-navbar">
-      <a href="#" class="logo">
-        <span class="logo-dot"></span> theden
-      </a>
-      <div class="nav-actions">
-        <!-- Removed Get Access, added generic Discord link -->
-        <a href="https://discord.gg/FPp9cEq3Y9" target="_blank" class="nav-item">
-            <i class="fab fa-discord"></i> Discord
-        </a>
-        <!-- Placeholder for License Key -->
-        <button class="nav-item" onclick="openLicenseInput()">
-            <i class="fas fa-key"></i> Key
-        </button>
-      </div>
-  </nav>
+<nav class="glass-navbar">
+    <a href="#" class="logo"><span class="logo-dot"></span> theden</a>
+    <div class="nav-actions">
+        <a href="https://discord.gg/FPp9cEq3Y9" target="_blank" class="nav-item">Discord</a>
+        <button class="nav-item" onclick="openLicenseInput()">Key</button>
+    </div>
+</nav>
 
-  <div class="container">
-    
-    <!-- Stats (Visual Only) -->
-    <div class="stats-container">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-title">RECEIPTS GENERATED</div>
-          <div class="stat-value">0</div>
-          <div class="stat-trend">Live System</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-title">USERS ONLINE</div>
-          <div class="stat-value">0</div>
-          <div class="stat-trend">Global</div>
-        </div>
+<div class="container">
+  <div class="stats-container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">RECEIPTS GENERATED</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-trend">Live System</div>
       </div>
-
-      <div class="activity-container">
-        <div class="activity-header">Recent Activity</div>
-        <div class="table-responsive">
-          <table class="activity-table">
-            <thead>
-              <tr>
-                <th>BRAND</th>
-                <th>TIME</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody id="activityBody">
-                <!-- JS fills this -->
-            </tbody>
-          </table>
-        </div>
+      <div class="stat-card">
+        <div class="stat-title">USERS ONLINE</div>
+        <div class="stat-value" id="statUsers">0</div>
+        <div class="stat-trend">Global</div>
       </div>
     </div>
-
-    <div style="text-align: center; margin-bottom: 40px;">
-        <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 10px; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            theden
-        </h2>
-        <p style="color: #888;">High-fidelity receipt generation platform.</p>
-    </div>
-
-    <div class="section-title">Paper Receipts</div>
-    <div class="dashboard" id="paperReceiptGrid" style="margin-bottom: 50px;">
-        <div class="brand-card" onclick="openLiveCanvas('sephora')">
-          <span class="paper-badge">PAPER</span>
-          <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1778389683/email_thumbnail_qtikm9.png" alt="Sephora">
-          <span>Sephora</span>
-        </div>
-        <div class="brand-card" onclick="openLiveCanvas('prada')">
-          <span class="paper-badge">PAPER</span>
-          <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777768303/Untitled-1_ooyfmm.png" alt="Prada">
-          <span>Prada</span>
-        </div>
-        <div class="brand-card" onclick="openLiveCanvas('harrods')">
-          <span class="paper-badge">PAPER</span>
-          <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777765646/Untitled-1_p9pmqu.png" alt="Harrods">
-          <span>Harrods</span>
-        </div>
-        <div class="brand-card" onclick="openLiveCanvas('apple')">
-          <span class="paper-badge">PAPER</span>
-          <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667338/Untitled-1_agbho0.png" alt="Apple">
-          <span>Apple</span>
-        </div>
-        <div class="brand-card" onclick="openLiveCanvas('chromehearts')">
-          <span class="paper-badge">PAPER</span>
-          <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1778397887/email_thumbnail_jsjvxk.png" alt="Chrome Hearts">
-          <span>Chrome Hearts</span>
-        </div>
-        <div class="brand-card" onclick="openLiveCanvas('stockx_thermal')">
-          <span class="paper-badge">PAPER</span>
-          <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667135/Untitled-1_qplzzl.png" alt="StockX">
-          <span>StockX</span>
-        </div>
-        <div class="brand-card" onclick="openLiveCanvas('louisvuitton_thermal')">
-          <span class="paper-badge">PAPER</span>
-          <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667724/Untitled-1_zg0liz.png" alt="Louis Vuitton">
-          <span>Louis Vuitton</span>
-        </div>
-    </div>
-    
-    <div class="section-title">E-MAIL RECEIPTS</div>
-    <div class="dashboard">
-      <div class="brand-card" onclick="openModal('stockx')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667135/Untitled-1_qplzzl.png" alt="StockX">
-        <span>StockX</span>
-      </div>
-      <div class="brand-card" onclick="openModal('apple')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667338/Untitled-1_agbho0.png" alt="Apple">
-        <span>Apple</span>
-      </div>
-      <div class="brand-card" onclick="openModal('goat')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667546/Untitle2d-1_b7qs06.png" alt="GOAT">
-        <span>GOAT</span>
-      </div>
-      <div class="brand-card" onclick="openModal('zalando')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667546/Untitled2-1_s1wlgq.png" alt="Zalando">
-        <span>Zalando</span>
-      </div>
-      <div class="brand-card" onclick="openModal('farfetch')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667547/Untitled-1_yyqh98.png" alt="FARFETCH">
-        <span>FARFETCH</span>
-      </div>
-      <div class="brand-card" onclick="openModal('ebay')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667724/Untitle11d-1_j7n1pq.png" alt="eBay">
-        <span>eBay</span>
-      </div>
-      <div class="brand-card" onclick="openModal('louisvuitton')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667724/Untitled-1_zg0liz.png" alt="Louis Vuitton">
-        <span>Louis Vuitton</span>
-      </div>
-      <div class="brand-card" onclick="openModal('dyson')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667723/Untitle2d-1_kpalfa.png" alt="Dyson">
-        <span>Dyson</span>
-      </div>
-      <div class="brand-card" onclick="openModal('balenciaga')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667901/Unti2tled-1_bxgizu.png" alt="Balenciaga">
-        <span>Balenciaga</span>
-      </div>
-      <div class="brand-card" onclick="openModal('grailed')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667902/Untitled-1_i64s01.png" alt="Grailed">
-        <span>Grailed</span>
-      </div>
-      <div class="brand-card" onclick="openModal('moncler')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667902/Untit1led-1_zzuuea.png" alt="Moncler">
-        <span>Moncler</span>
-      </div>
-      <div class="brand-card" onclick="openModal('selfridges')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668109/Untitled1-1_eujsua.png" alt="Selfridges">
-        <span>Selfridges</span>
-      </div>
-      <div class="brand-card" onclick="openModal('amazon')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668107/Untitled-1_bb1wgk.png" alt="Amazon">
-        <span>Amazon</span>
-      </div>
-      <div class="brand-card" onclick="openModal('viviennewestwood')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668108/Unt1itled-1_umty6t.png" alt="Vivienne Westwood">
-        <span>Vivienne Westwood</span>
-      </div>
-      <div class="brand-card" onclick="openModal('flannels')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668274/Untitl111ed-1_d3vtmv.png" alt="Flannels">
-        <span>Flannels</span>
-      </div>
-      <div class="brand-card" onclick="openModal('dior')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668273/U1ntitled-1_rgw1pz.png" alt="DIOR">
-        <span>DIOR</span>
-      </div>
-      <div class="brand-card" onclick="openModal('nike')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668274/Untitled-1_gbxfhd.png" alt="Nike">
-        <span>Nike</span>
-      </div>
-      <div class="brand-card" onclick="openModal('kickgame')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668498/U1ntitled-1_htpyt7.png" alt="Kick Game">
-        <span>Kick Game</span>
-      </div>
-      <div class="brand-card" onclick="openModal('hermes')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668500/Untitled-1_pop751.png" alt="Hermes">
-        <span>Hermes</span>
-      </div>
-      <div class="brand-card" onclick="openModal('vinted')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668499/Unti1tled-1_nvvmfg.png" alt="Vinted">
-        <span>Vinted</span>
-      </div>
-      <div class="brand-card" onclick="openModal('rickowens')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777737376/Untitled-1_pra2vy.png" alt="Rick Owens">
-        <span>Rick Owens</span>
-      </div>
-      <div class="brand-card" onclick="openModal('saintlaurent')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777738223/Untitled-1_ip5yse.png" alt="Saint Laurent">
-        <span>Saint Laurent</span>
-      </div>
-      <div class="brand-card" onclick="openModal('pandora')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777739104/Untitled-1_prxdhl.png" alt="Pandora">
-        <span>Pandora</span>
-      </div>
-      <div class="brand-card" onclick="openModal('sp5der')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777762457/Untitled-1_am1bhy.png" alt="SP5DER">
-        <span>SP5DER</span>
-      </div>
-      <div class="brand-card" onclick="openModal('tnf')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777763129/Untitled-1_nbic0q.png" alt="The North Face">
-        <span>The North Face</span>
-      </div>
-      <div class="brand-card" onclick="openModal('gucci')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777763842/Untitled-1_n1ugdm.png" alt="Gucci">
-        <span>Gucci</span>
-      </div>
-      <div class="brand-card" onclick="openModal('mrporter')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777764643/Untitled-1_rnpcaf.png" alt="MR PORTER">
-        <span>MR PORTER</span>
-      </div>
-      <div class="brand-card" onclick="openModal('harrods')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777765646/Untitled-1_p9pmqu.png" alt="Harrods">
-        <span>Harrods</span>
-      </div>
-      <div class="brand-card" onclick="openModal('bestbuy')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777766784/Untitled-1_natrb9.png" alt="Best Buy">
-        <span>Best Buy</span>
-      </div>
-      <div class="brand-card" onclick="openModal('prada')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777768303/Untitled-1_ooyfmm.png" alt="Prada">
-        <span>Prada</span>
-      </div>
-      <div class="brand-card" onclick="openModal('canadagoose')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777770485/Untitled-1_x4k7wv.png" alt="Canada Goose">
-        <span>Canada Goose</span>
-      </div>
-      <div class="brand-card" onclick="openModal('burberry')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777771408/Untitled-1_i3ybom.png" alt="Burberry">
-        <span>Burberry</span>
-      </div>
-      <div class="brand-card" onclick="openModal('yzygap')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777776221/Untitled-1_gpfuog.png" alt="YZY GAP">
-        <span>YZY GAP</span>
-      </div>
-      <div class="brand-card" onclick="openModal('stussy')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777777010/Untitled-1_jemma0.png" alt="Stussy">
-        <span>Stussy</span>
-      </div>
-      <div class="brand-card" onclick="openModal('ssense')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777778181/Untitled-1_haaiob.png" alt="SSENSE">
-        <span>SSENSE</span>
-      </div>
-      <div class="brand-card" onclick="openModal('brokenplanet')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777779372/Untitled-1_lhflb0.png" alt="Broken Planet">
-        <span>Broken Planet</span>
-      </div>
-      <div class="brand-card" onclick="openModal('arcteryx')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777817783/Untitled-1_ntmix5.png" alt="Arc'Teryx">
-        <span>Arc'Teryx</span>
-      </div>
-      <div class="brand-card" onclick="openModal('bape')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777818600/Untitled-1_ac4dhk.png" alt="BAPE">
-        <span>BAPE</span>
-      </div>
-      <div class="brand-card" onclick="openModal('flightclub')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777819259/Untitled-1_qhuntv.png" alt="Flight Club">
-        <span>Flight Club</span>
-      </div>
-      <div class="brand-card" onclick="openModal('trapstar')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777820096/Untitled-1_afrdli.png" alt="Trapstar">
-        <span>Trapstar</span>
-      </div>
-      <div class="brand-card" onclick="openModal('bstn')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777821098/Untitled-1_tnrmmz.png" alt="BSTN">
-        <span>BSTN</span>
-      </div>
-      <div class="brand-card" onclick="openModal('notino')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777822013/Untitled-1_yqn8r1.png" alt="Notino">
-        <span>Notino</span>
-      </div>
-      <div class="brand-card" onclick="openModal('bayern')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777823604/Untitled-1_zf0t8v.png" alt="FC Bayern">
-        <span>FC Bayern</span>
-      </div>
-      <div class="brand-card" onclick="openModal('plug')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777824787/Untitled-1_lbhcqz.png" alt="No Sauce The Plug">
-        <span>No Sauce The Plug</span>
-      </div>
-      <div class="brand-card" onclick="openModal('corteiz')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777825755/Untitled-1_nxuq3y.png" alt="Corteiz">
-        <span>Corteiz</span>
-      </div>
-      <div class="brand-card" onclick="openModal('stanley')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777826558/Untitled-1_kzfuvc.png" alt="Stanley">
-        <span>Stanley</span>
-      </div>
-      <div class="brand-card" onclick="openModal('legitapp')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1779023477/email_thumbnail_n3iqha.png" alt="Legit App">
-        <span>Legit App</span>
-      </div>
-      <div class="brand-card" onclick="openModal('footshop')">
-        <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1779026412/email_thumbnail_sj7th3.png" alt="Footshop">
-        <span>Footshop</span>
+    <div class="activity-container">
+      <div class="activity-header">Recent Activity</div>
+      <div class="table-responsive">
+        <table class="activity-table">
+          <thead><tr><th>BRAND</th><th>TIME</th><th>STATUS</th></tr></thead>
+          <tbody id="activityBody"></tbody>
+        </table>
       </div>
     </div>
-
   </div>
 
-  <!-- Canvas Modal -->
-  <div class="modal-overlay" id="liveCanvasModalOverlay" style="z-index: 2000;">
-    <div class="modal-box" style="width: 640px; max-width: 95%; display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; font-size: 22px; font-weight: 700;">Live Editor</h2>
-            <button class="close-btn" onclick="closeLiveCanvas()">×</button>
-        </div>
-        
-        <p style="color: var(--text-muted); font-size: 14px; margin-top: -10px; margin-bottom: 15px;">
-            Tap text on the receipt to edit.
-        </p>
+  <div style="text-align: center; margin-bottom: 40px;">
+    <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 10px; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">theden</h2>
+    <p style="color: #888;">High-fidelity receipt generation platform.</p>
+  </div>
 
-        <div style="flex: 1; position: relative; display: flex; flex-direction: column; min-height: 0; margin-bottom: 10px;">
-            <div class="receipt-canvas-wrapper">
-                <div id="receiptContainer" class="receipt-canvas">
-                    <div id="canvasWatermark" class="watermark-overlay"></div>
-                
-                <div id="sephora-layer">
-                    <span id="pos-item-name" class="live-text" contenteditable="true">Product Name</span>
-                    <span id="pos-item-sku" class="live-text" contenteditable="true">SKU</span>
-                    <span id="pos-item-qty" class="live-text" contenteditable="true">1</span>
-                    <span id="pos-item-price" class="live-text" contenteditable="true">$80.00</span>
-                    <span id="pos-item-price2" class="live-text" contenteditable="true">$80.00</span>
-                    <span id="pos-item-subtotal" class="live-text" contenteditable="true">$80.00</span>
-                    <span id="pos-item-vat" class="live-text" contenteditable="true">$17.60</span>
-                    <span id="pos-item-vatrate" class="live-text" contenteditable="true">22%</span>
-                    <span id="pos-item-totalamt" class="live-text" contenteditable="true">$97.60</span>
-                    <span id="pos-item-totalamt2" class="live-text" contenteditable="true">$97.60</span>
-                    <span id="pos-item-card" class="live-text" contenteditable="true">4970</span>
-                    <span id="pos-item-totalamt3" class="live-text" contenteditable="true">$97.60</span>
-                    <span id="pos-item-auth" class="live-text" contenteditable="true">0056950</span>
-                    <span id="pos-item-sequence" class="live-text" contenteditable="true">000044</span>
-                    <span id="pos-item-reference" class="live-text" contenteditable="true">00000044</span>
-                    <span id="pos-item-term" class="live-text" contenteditable="true">004</span>
-                    <span id="pos-item-date" class="live-text" contenteditable="true">15/04/26</span>
-                    <span id="pos-item-time" class="live-text" contenteditable="true">14:32:28</span>
-                    <span id="pos-item-aid" class="live-text" contenteditable="true">AC000002771010</span>
-                    <span id="pos-item-date2" class="live-text" contenteditable="true">15/04/26 2:32 PM</span>
-                    <span id="pos-item-detail" class="live-text" contenteditable="true">562</span>
-                    <span id="pos-item-barcode" class="live-text" contenteditable="true">9900056204724591807103</span>
-                    <span id="pos-item-storename" class="live-text" contenteditable="true">SEPHORA TERMOLI</span>
-                    <span id="pos-item-storestreet" class="live-text" contenteditable="true">CORSO UMBERTO I 61-65</span>
-                    <span id="pos-item-storecity" class="live-text" contenteditable="true">TERMOLI, 86039</span>
-                    <span id="pos-item-storephone" class="live-text" contenteditable="true">+39 0875 703413</span>
-                </div>
-
-                <div id="apple-layer" style="display: none;">
-                    <span id="pos-item-apple-storename" class="live-text" contenteditable="true">Apple Store, South Shore<br>250 Granite Street<br>Braintree, MA 02184<br>southshore@apple.com<br>(781) 817-1270</span>
-                    <span id="pos-item-apple-storeurl" class="live-text" contenteditable="true">www.apple.com/retail/southshore</span>
-                    <span id="pos-item-apple-date" class="live-text" contenteditable="true">May 20, 2026 3:39 PM</span>
-                    <span id="pos-item-apple-name" class="live-text" contenteditable="true">Your Name<br>your-email@email.com</span>
-                    <span id="pos-item-apple-price" class="live-text" contenteditable="true">$549.00</span>
-                    <span id="pos-item-apple-price2" class="live-text" contenteditable="true">$549.00<br>$34.31<br>$583.31</span>
-                    <span id="pos-item-apple-productname" class="live-text" contenteditable="true">1 AirPods Max 2 - Midnight</span>
-                    <span id="pos-item-apple-card" class="live-text" contenteditable="true">5931</span>
-                    <span id="pos-item-apple-date2" class="live-text" contenteditable="true">05/20/2026 15:39 PM</span>
-                    <span id="pos-item-apple-reference" class="live-text" contenteditable="true">543981234980105937136105</span>
-                </div>
-
-                <div id="stockx_thermal-layer" style="display: none;">
-                    <span id="sx-item-productname" class="live-text" contenteditable="true">Jordan 1 Retro High OG Shattered<br>Backboard (2025)</span>
-                    <span id="sx-item-address" class="live-text" contenteditable="true">Name<br>Street<br>City, ZIP Code<br>Country</span>
-                    <span id="sx-item-ordernumber" class="live-text" contenteditable="true">12345678-12345678</span>
-                    <span id="sx-item-details" class="live-text" contenteditable="true">11<br>Black/Black-Sail-Starfish<br>DZ5485-008</span>
-                    <span id="sx-item-price" class="text-white-900 font-mono">id="sx-item-price" contenteditable="true">$147.00<br>$10.82<br>$4.95<br>$14.50</span>
-                    <span id="sx-item-total" class="text-white-900 font-mono" contenteditable="true">$177.27</span>
-                </div>
-
-                <div id="chromehearts-layer" style="display: none;">
-                    <span id="pos-item-chromehearts-address" class="live-text" contenteditable="true">CHROME HEARTS MIAMI<br>4025 NE 2nd Avenue<br>MIAMI, FL 33137</span>
-                    <span id="pos-item-chromehearts-sku" class="live-text" contenteditable="true">1 162006CRYXXX272</span>
-                    <span id="pos-item-chromehearts-productname" class="live-text" contenteditable="true">EAU DE PARFUM</span>
-                    <span id="pos-item-chromehearts-price" class="live-text" contenteditable="true">$500.00</span>
-                    <span id="pos-item-chromehearts-price2" class="live-text" contenteditable="true">$500.00<br>$35.00<br>$535.00</span>
-                    <span id="pos-item-chromehearts-price3" class="live-text" contenteditable="true">$550.00<br>$15.00</span>
-                    <span id="pos-item-chromehearts-date" class="live-text" contenteditable="true">3/15/2026, 15:26:12 PM</span>
-                </div>
-
-                <div id="louisvuitton_thermal-layer" style="display: none;">
-                    <span id="lv-item-productname" class="live-text" contenteditable="true">VANITY CHAIN POUCH</span>
-                    <span id="lv-item-sku" class="live-text" contenteditable="true">M47125</span>
-                    <span id="lv-item-invoice" class="live-text" contenteditable="true">C1582026/v4810693</span>
-                    <span id="lv-item-invoice2" class="live-text" contenteditable="true">184305918</span>
-                    <span id="lv-item-date" class="live-text" contenteditable="true">March 15th 2026</span>
-                    <span id="lv-item-hour" class="live-text" contenteditable="true">16:43</span>
-                    <span id="lv-item-price" class="live-text" contenteditable="true">2 200,00</span>
-                    <span id="lv-item-price2" class="live-text" contenteditable="true">2 200,00</span>
-                    <span id="lv-item-price3" class="live-text" contenteditable="true">2 200,00<br>150,00<br>2 350,00</span>
-                    <span id="lv-item-price4" class="live-text" contenteditable="true">2 350,00</span>
-                    <span id="lv-item-price5" class="live-text" contenteditable="true">2 350,00</span>
-                    <span id="lv-item-currency" class="live-text" contenteditable="true">USD<br>USD<br>USD</span>
-                    <span id="lv-item-currency2" class="live-text" contenteditable="true">USD</span>
-                    <span id="lv-item-currency3" class="live-text" contenteditable="true">USD</span>
-                    <span id="lv-item-payment" class="live-text" contenteditable="true">VISA</span>
-                    <span id="lv-item-address" class="live-text" contenteditable="true">Your Name<br>Street Address<br>ZIP Code, City</span>
-                    <span id="lv-item-address2" class="live-text" contenteditable="true">Your Name<br>Street Address<br>ZIP Code, City</span>
-                </div>
-
-                <div id="harrods-layer" style="display: none;">
-                    <span id="pos-item-harrods-program" class="live-text" contenteditable="true">Open Monday - Saturday until 9pm</span>
-                    <span id="pos-item-harrods-program2" class="live-text" contenteditable="true">Sunday - 11:30am - 6pm</span>
-                    <span id="pos-item-harrods-program3" class="live-text" contenteditable="true">(browsing only between 11:30am 2 2noon)</span>
-                    <span id="pos-item-harrods-barcode" class="live-text" contenteditable="true">0000057328492041736512894</span>
-                    <span id="pos-item-harrods-name" class="live-text" contenteditable="true">6416518 TOM FORD</span>
-                    <span id="pos-item-harrods-tendered" class="live-text" contenteditable="true">Visa Debit Tendered</span>
-                    <span id="pos-item-harrods-name2" class="live-text" contenteditable="true">Lost Cherry Eau de Parfum (100ml)</span>
-                    <span id="pos-item-harrods-storename" class="live-text" contenteditable="true">Harrods Limited</span>
-                    <span id="pos-item-harrods-storestreet" class="live-text" contenteditable="true">87-135 Brompton Road</span>
-                    <span id="pos-item-harrods-city" class="live-text" contenteditable="true">LONDON SW1X 7XL</span>
-                    <span id="pos-item-harrods-phone" class="live-text" contenteditable="true">Telephone: 020 7730 1234</span>
-                    <span id="pos-item-harrods-vatnumber" class="live-text" contenteditable="true">VAT Number: 629273423</span>
-                    <span id="pos-item-harrods-price" class="live-text" contenteditable="true">$390.00</span>
-                    <span id="pos-item-harrods-price2" class="live-text" contenteditable="true">$390.00</span>
-                    <span id="pos-item-harrods-price3" class="live-text" contenteditable="true">$390.00</span>
-                    <span id="pos-item-harrods-price4" class="live-text" contenteditable="true">$390.00</span>
-                    <span id="pos-item-harrods-date" class="live-text" contenteditable="true">06/04/26 14:00</span>
-                    <span id="pos-item-harrods-sku" class="live-text" contenteditable="true">NT1302-170029</span>
-                    <span id="pos-item-harrods-clerk" class="live-text" contenteditable="true">Melissa</span>
-                    <span id="pos-item-harrods-card" class="live-text" contenteditable="true">Visa Debit</span>
-                    <span id="pos-item-harrods-digits" class="live-text" contenteditable="true">5827</span>
-                    <span id="pos-item-harrods-authcode" class="live-text" contenteditable="true">061298</span>
-                    <span id="pos-item-harrods-merchant" class="live-text" contenteditable="true">***00262</span>
-                    <span id="pos-item-harrods-terminal" class="live-text" contenteditable="true">***0353</span>
-                    <span id="pos-item-harrods-panseq" class="live-text" contenteditable="true">00</span>
-                    <span id="pos-item-harrods-aid" class="live-text" contenteditable="true">A0000000031010</span>
-                    <span id="pos-item-harrods-crypto" class="live-text" contenteditable="true">40/1A660B845CB0FFC3</span>
-                    <span id="pos-item-harrods-rewards" class="live-text" contenteditable="true">5712</span>
-                </div>
-
-                <div id="prada-layer" style="display: none;">
-                    <span id="prada-pos-item-name" class="live-text" contenteditable="true">PRADA EXPLORE MEDIUM NAPPA<br>LEATHER SHOULDER BAG</span>
-                    <span id="prada-pos-item-storename" class="live-text" contenteditable="true">Prada Bellevue</span>
-                    <span id="prada-pos-item-storestreet" class="live-text" contenteditable="true">11111 Northeast 8th Street</span>
-                    <span id="prada-pos-item-storecity" class="live-text" contenteditable="true">Bellevue</span>
-                    <span id="prada-pos-item-storezip" class="live-text" contenteditable="true">WA 98004</span>
-                    <span id="prada-pos-item-invoice" class="live-text" contenteditable="true">Inv. 10114958205</span>
-                    <span id="prada-pos-item-phone" class="live-text" contenteditable="true">Tel. (425) 637-5820</span>
-                    <span id="prada-pos-item-date" class="live-text" contenteditable="true">03/15/2026, 3:26:19 PM</span>
-                    <span id="prada-pos-item-document" class="live-text" contenteditable="true">DOCUMENT # 1881-0604</span>
-                    <span id="prada-pos-item-price" class="live-text" contenteditable="true">$3,750.00</span>
-                    <span id="prada-pos-item-subtotal" class="live-text" contenteditable="true">$3,750.00</span>
-                    <span id="prada-pos-item-tax" class="live-text" contenteditable="true">$386.25</span>
-                    <span id="prada-pos-item-totalamt" class="live-text" contenteditable="true">$4,136.25</span>
-                    <span id="prada-pos-item-card" class="live-text" contenteditable="true">5942</span>
-                    <span id="prada-pos-item-date2" class="live-text" contenteditable="true">03/15/2026 15:26 PM</span>
-                    <span id="prada-pos-item-reference" class="live-text" contenteditable="true">7104917502384619</span>
-            </div> </div> </div> </div> 
-            <div style="margin-top: auto; padding-top: 20px;">
-                <button id="primaryGenBtn" class="btn btn-primary" onclick="processThermalExport()">Generate Receipt</button>
-                <div id="printInstructions" style="color: var(--text-muted); font-size: 13px; text-align: center; display: none;"></div>
-            </div>
-        </div>
+  <div class="section-title">Paper Receipts</div>
+  <div class="dashboard" id="paperReceiptGrid" style="margin-bottom: 50px;">
+    <div class="brand-card" onclick="openLiveCanvas('sephora')">
+      <span class="paper-badge">PAPER</span>
+      <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1778389683/email_thumbnail_qtikm9.png" alt="Sephora">
+      <span>Sephora</span>
     </div>
+    <div class="brand-card" onclick="openLiveCanvas('prada')">
+      <span class="paper-badge">PAPER</span>
+      <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777768303/Untitled-1_ooyfmm.png" alt="Prada">
+      <span>Prada</span>
+    </div>
+    <div class="brand-card" onclick="openLiveCanvas('harrods')">
+      <span class="paper-badge">PAPER</span>
+      <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777765646/Untitled-1_p9pmqu.png" alt="Harrods">
+      <span>Harrods</span>
+    </div>
+    <div class="brand-card" onclick="openLiveCanvas('apple')">
+      <span class="paper-badge">PAPER</span>
+      <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667338/Untitled-1_agbho0.png" alt="Apple">
+      <span>Apple</span>
+    </div>
+    <div class="brand-card" onclick="openLiveCanvas('chromehearts')">
+      <span class="paper-badge">PAPER</span>
+      <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1778397887/email_thumbnail_jsjvxk.png" alt="Chrome Hearts">
+      <span>Chrome Hearts</span>
+    </div>
+    <div class="brand-card" onclick="openLiveCanvas('stockx_thermal')">
+      <span class="paper-badge">PAPER</span>
+      <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667135/Untitled-1_qplzzl.png" alt="StockX">
+      <span>StockX</span>
+    </div>
+    <div class="brand-card" onclick="openLiveCanvas('louisvuitton_thermal')">
+      <span class="paper-badge">PAPER</span>
+      <img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667724/Untitled-1_zg0liz.png" alt="Louis Vuitton">
+      <span>Louis Vuitton</span>
+    </div>
+  </div>
+
+  <div class="section-title">E-MAIL RECEIPTS</div>
+  <div class="dashboard">
+    <div class="brand-card" onclick="openModal('stockx')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667135/Untitled-1_qplzzl.png" alt="StockX"><span>StockX</span></div>
+    <div class="brand-card" onclick="openModal('apple')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667338/Untitled-1_agbho0.png" alt="Apple"><span>Apple</span></div>
+    <div class="brand-card" onclick="openModal('goat')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667546/Untitle2d-1_b7qs06.png" alt="GOAT"><span>GOAT</span></div>
+    <div class="brand-card" onclick="openModal('zalando')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667546/Untitled2-1_s1wlgq.png" alt="Zalando"><span>Zalando</span></div>
+    <div class="brand-card" onclick="openModal('farfetch')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667547/Untitled-1_yyqh98.png" alt="FARFETCH"><span>FARFETCH</span></div>
+    <div class="brand-card" onclick="openModal('ebay')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667724/Untitle11d-1_j7n1pq.png" alt="eBay"><span>eBay</span></div>
+    <div class="brand-card" onclick="openModal('louisvuitton')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667724/Untitled-1_zg0liz.png" alt="Louis Vuitton"><span>Louis Vuitton</span></div>
+    <div class="brand-card" onclick="openModal('dyson')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667723/Untitle2d-1_kpalfa.png" alt="Dyson"><span>Dyson</span></div>
+    <div class="brand-card" onclick="openModal('balenciaga')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667901/Unti2tled-1_bxgizu.png" alt="Balenciaga"><span>Balenciaga</span></div>
+    <div class="brand-card" onclick="openModal('grailed')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667902/Untitled-1_i64s01.png" alt="Grailed"><span>Grailed</span></div>
+    <div class="brand-card" onclick="openModal('moncler')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777667902/Untit1led-1_zzuuea.png" alt="Moncler"><span>Moncler</span></div>
+    <div class="brand-card" onclick="openModal('selfridges')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668109/Untitled1-1_eujsua.png" alt="Selfridges"><span>Selfridges</span></div>
+    <div class="brand-card" onclick="openModal('amazon')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668107/Untitled-1_bb1wgk.png" alt="Amazon"><span>Amazon</span></div>
+    <div class="brand-card" onclick="openModal('viviennewestwood')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668108/Unt1itled-1_umty6t.png" alt="Vivienne Westwood"><span>Vivienne Westwood</span></div>
+    <div class="brand-card" onclick="openModal('flannels')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668274/Untitl111ed-1_d3vtmv.png" alt="Flannels"><span>Flannels</span></div>
+    <div class="brand-card" onclick="openModal('dior')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668273/U1ntitled-1_rgw1pz.png" alt="DIOR"><span>DIOR</span></div>
+    <div class="brand-card" onclick="openModal('nike')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668274/Untitled-1_gbxfhd.png" alt="Nike"><span>Nike</span></div>
+    <div class="brand-card" onclick="openModal('kickgame')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668498/U1ntitled-1_htpyt7.png" alt="Kick Game"><span>Kick Game</span></div>
+    <div class="brand-card" onclick="openModal('hermes')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668500/Untitled-1_pop751.png" alt="Hermes"><span>Hermes</span></div>
+    <div class="brand-card" onclick="openModal('vinted')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777668499/Unti1tled-1_nvvmfg.png" alt="Vinted"><span>Vinted</span></div>
+    <div class="brand-card" onclick="openModal('rickowens')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777737376/Untitled-1_pra2vy.png" alt="Rick Owens"><span>Rick Owens</span></div>
+    <div class="brand-card" onclick="openModal('saintlaurent')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777738223/Untitled-1_ip5yse.png" alt="Saint Laurent"><span>Saint Laurent</span></div>
+    <div class="brand-card" onclick="openModal('pandora')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777739104/Untitled-1_prxdhl.png" alt="Pandora"><span>Pandora</span></div>
+    <div class="brand-card" onclick="openModal('sp5der')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777762457/Untitled-1_am1bhy.png" alt="SP5DER"><span>SP5DER</span></div>
+    <div class="brand-card" onclick="openModal('tnf')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777763129/Untitled-1_nbic0q.png" alt="The North Face"><span>The North Face</span></div>
+    <div class="brand-card" onclick="openModal('gucci')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777763842/Untitled-1_n1ugdm.png" alt="Gucci"><span>Gucci</span></div>
+    <div class="brand-card" onclick="openModal('mrporter')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777764643/Untitled-1_rnpcaf.png" alt="MR PORTER"><span>MR PORTER</span></div>
+    <div class="brand-card" onclick="openModal('harrods')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777765646/Untitled-1_p9pmqu.png" alt="Harrods"><span>Harrods</span></div>
+    <div class="brand-card" onclick="openModal('bestbuy')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777766784/Untitled-1_natrb9.png" alt="Best Buy"><span>Best Buy</span></div>
+    <div class="brand-card" onclick="openModal('prada')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777768303/Untitled-1_ooyfmm.png" alt="Prada"><span>Prada</span></div>
+    <div class="brand-card" onclick="openModal('canadagoose')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777770485/Untitled-1_x4k7wv.png" alt="Canada Goose"><span>Canada Goose</span></div>
+    <div class="brand-card" onclick="openModal('burberry')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777771408/Untitled-1_i3ybom.png" alt="Burberry"><span>Burberry</span></div>
+    <div class="brand-card" onclick="openModal('yzygap')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777776221/Untitled-1_gpfuog.png" alt="YZY GAP"><span>YZY GAP</span></div>
+    <div class="brand-card" onclick="openModal('stussy')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777777010/Untitled-1_jemma0.png" alt="Stussy"><span>Stussy</span></div>
+    <div class="brand-card" onclick="openModal('ssense')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777778181/Untitled-1_haaiob.png" alt="SSENSE"><span>SSENSE</span></div>
+    <div class="brand-card" onclick="openModal('brokenplanet')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777779372/Untitled-1_lhflb0.png" alt="Broken Planet"><span>Broken Planet</span></div>
+    <div class="brand-card" onclick="openModal('arcteryx')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777817783/Untitled-1_ntmix5.png" alt="Arc'Teryx"><span>Arc'Teryx</span></div>
+    <div class="brand-card" onclick="openModal('bape')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777818600/Untitled-1_ac4dhk.png" alt="BAPE"><span>BAPE</span></div>
+    <div class="brand-card" onclick="openModal('flightclub')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777819259/Untitled-1_qhuntv.png" alt="Flight Club"><span>Flight Club</span></div>
+    <div class="brand-card" onclick="openModal('trapstar')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777820096/Untitled-1_afrdli.png" alt="Trapstar"><span>Trapstar</span></div>
+    <div class="brand-card" onclick="openModal('bstn')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777821098/Untitled-1_tnrmmz.png" alt="BSTN"><span>BSTN</span></div>
+    <div class="brand-card" onclick="openModal('notino')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777822013/Untitled-1_yqn8r1.png" alt="Notino"><span>Notino</span></div>
+    <div class="brand-card" onclick="openModal('bayern')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777823604/Untitled-1_zf0t8v.png" alt="FC Bayern"><span>FC Bayern</span></div>
+    <div class="brand-card" onclick="openModal('plug')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777824787/Untitled-1_lbhcqz.png" alt="No Sauce The Plug"><span>No Sauce The Plug</span></div>
+    <div class="brand-card" onclick="openModal('corteiz')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777825755/Untitled-1_nxuq3y.png" alt="Corteiz"><span>Corteiz</span></div>
+    <div class="brand-card" onclick="openModal('stanley')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1777826558/Untitled-1_kzfuvc.png" alt="Stanley"><span>Stanley</span></div>
+    <div class="brand-card" onclick="openModal('legitapp')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1779023477/email_thumbnail_n3iqha.png" alt="Legit App"><span>Legit App</span></div>
+    <div class="brand-card" onclick="openModal('footshop')"><img src="https://res.cloudinary.com/dtwidxp58/image/upload/q_auto/f_auto/v1779026412/email_thumbnail_sj7th3.png" alt="Footshop"><span>Footshop</span></div>
+  </div>
+</div>
+
+<!-- Canvas Modal -->
+<div class="modal-overlay" id="liveCanvasModalOverlay" style="z-index: 2000;">
+  <div class="modal-box" style="width: 640px; max-width: 95%; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="margin: 0; font-size: 22px; font-weight: 700;">Live Editor</h2>
+      <button class="close-btn" onclick="closeLiveCanvas()">×</button>
+    </div>
+    <p style="color: var(--text-muted); font-size: 14px; margin-top: -10px; margin-bottom: 15px;">Tap text on the receipt to edit.</p>
+    <div style="flex: 1; position: relative; display: flex; flex-direction: column; min-height: 0; margin-bottom: 10px;">
+      <div class="receipt-canvas-wrapper">
+        <div id="receiptContainer" class="receipt-canvas">
+          <div id="canvasWatermark" class="watermark-overlay"></div>
+
+          <div id="sephora-layer">
+            <span id="pos-item-name" class="live-text" contenteditable="true">Product Name</span>
+            <span id="pos-item-sku" class="live-text" contenteditable="true">SKU</span>
+            <span id="pos-item-qty" class="live-text" contenteditable="true">1</span>
+            <span id="pos-item-price" class="live-text" contenteditable="true">$80.00</span>
+            <span id="pos-item-price2" class="live-text" contenteditable="true">$80.00</span>
+            <span id="pos-item-subtotal" class="live-text" contenteditable="true">$80.00</span>
+            <span id="pos-item-vat" class="live-text" contenteditable="true">$17.60</span>
+            <span id="pos-item-vatrate" class="live-text" contenteditable="true">22%</span>
+            <span id="pos-item-totalamt" class="live-text" contenteditable="true">$97.60</span>
+            <span id="pos-item-totalamt2" class="live-text" contenteditable="true">$97.60</span>
+            <span id="pos-item-card" class="live-text" contenteditable="true">4970</span>
+            <span id="pos-item-totalamt3" class="live-text" contenteditable="true">$97.60</span>
+            <span id="pos-item-auth" class="live-text" contenteditable="true">0056950</span>
+            <span id="pos-item-sequence" class="live-text" contenteditable="true">000044</span>
+            <span id="pos-item-reference" class="live-text" contenteditable="true">00000044</span>
+            <span id="pos-item-term" class="live-text" contenteditable="true">004</span>
+            <span id="pos-item-date" class="live-text" contenteditable="true">15/04/26</span>
+            <span id="pos-item-time" class="live-text" contenteditable="true">14:32:28</span>
+            <span id="pos-item-aid" class="live-text" contenteditable="true">AC000002771010</span>
+            <span id="pos-item-date2" class="live-text" contenteditable="true">15/04/26 2:32 PM</span>
+            <span id="pos-item-detail" class="live-text" contenteditable="true">562</span>
+            <span id="pos-item-barcode" class="live-text" contenteditable="true">9900056204724591807103</span>
+            <span id="pos-item-storename" class="live-text" contenteditable="true">SEPHORA TERMOLI</span>
+            <span id="pos-item-storestreet" class="live-text" contenteditable="true">CORSO UMBERTO I 61-65</span>
+            <span id="pos-item-storecity" class="live-text" contenteditable="true">TERMOLI, 86039</span>
+            <span id="pos-item-storephone" class="live-text" contenteditable="true">+39 0875 703413</span>
+          </div>
+
+          <div id="apple-layer" style="display:none;">
+            <span id="pos-item-apple-storename" class="live-text" contenteditable="true">Apple Store, South Shore&#10;250 Granite Street&#10;Braintree, MA 02184&#10;southshore@apple.com&#10;(781) 817-1270</span>
+            <span id="pos-item-apple-storeurl" class="live-text" contenteditable="true">www.apple.com/retail/southshore</span>
+            <span id="pos-item-apple-date" class="live-text" contenteditable="true">May 20, 2026 3:39 PM</span>
+            <span id="pos-item-apple-name" class="live-text" contenteditable="true">Your Name&#10;your-email@email.com</span>
+            <span id="pos-item-apple-price" class="live-text" contenteditable="true">$549.00</span>
+            <span id="pos-item-apple-price2" class="live-text" contenteditable="true">$549.00&#10;$34.31&#10;$583.31</span>
+            <span id="pos-item-apple-productname" class="live-text" contenteditable="true">1 AirPods Max 2 - Midnight</span>
+            <span id="pos-item-apple-card" class="live-text" contenteditable="true">5931</span>
+            <span id="pos-item-apple-date2" class="live-text" contenteditable="true">05/20/2026 15:39 PM</span>
+            <span id="pos-item-apple-reference" class="live-text" contenteditable="true">543981234980105937136105</span>
+          </div>
+
+          <div id="stockx_thermal-layer" style="display:none;">
+            <span id="sx-item-productname" class="live-text" contenteditable="true">Jordan 1 Retro High OG Shattered&#10;Backboard (2025)</span>
+            <span id="sx-item-address" class="live-text" contenteditable="true">Name&#10;Street&#10;City, ZIP Code&#10;Country</span>
+            <span id="sx-item-ordernumber" class="live-text" contenteditable="true">12345678-12345678</span>
+            <span id="sx-item-details" class="live-text" contenteditable="true">11&#10;Black/Black-Sail-Starfish&#10;DZ5485-008</span>
+            <span id="sx-item-price" class="live-text" contenteditable="true">$147.00&#10;$10.82&#10;$4.95&#10;$14.50</span>
+            <span id="sx-item-total" class="live-text" contenteditable="true">$177.27</span>
+          </div>
+
+          <div id="chromehearts-layer" style="display:none;">
+            <span id="pos-item-chromehearts-address" class="live-text" contenteditable="true">CHROME HEARTS MIAMI&#10;4025 NE 2nd Avenue&#10;MIAMI, FL 33137</span>
+            <span id="pos-item-chromehearts-sku" class="live-text" contenteditable="true">1 162006CRYXXX272</span>
+            <span id="pos-item-chromehearts-productname" class="live-text" contenteditable="true">EAU DE PARFUM</span>
+            <span id="pos-item-chromehearts-price" class="live-text" contenteditable="true">$500.00</span>
+            <span id="pos-item-chromehearts-price2" class="live-text" contenteditable="true">$500.00&#10;$35.00&#10;$535.00</span>
+            <span id="pos-item-chromehearts-price3" class="live-text" contenteditable="true">$550.00&#10;$15.00</span>
+            <span id="pos-item-chromehearts-date" class="live-text" contenteditable="true">3/15/2026, 15:26:12 PM</span>
+          </div>
+
+          <div id="louisvuitton_thermal-layer" style="display:none;">
+            <span id="lv-item-productname" class="live-text" contenteditable="true">VANITY CHAIN POUCH</span>
+            <span id="lv-item-sku" class="live-text" contenteditable="true">M47125</span>
+            <span id="lv-item-invoice" class="live-text" contenteditable="true">C1582026/v4810693</span>
+            <span id="lv-item-invoice2" class="live-text" contenteditable="true">184305918</span>
+            <span id="lv-item-date" class="live-text" contenteditable="true">March 15th 2026</span>
+            <span id="lv-item-hour" class="live-text" contenteditable="true">16:43</span>
+            <span id="lv-item-price" class="live-text" contenteditable="true">2 200,00</span>
+            <span id="lv-item-price2" class="live-text" contenteditable="true">2 200,00</span>
+            <span id="lv-item-price3" class="live-text" contenteditable="true">2 200,00&#10;150,00&#10;2 350,00</span>
+            <span id="lv-item-price4" class="live-text" contenteditable="true">2 350,00</span>
+            <span id="lv-item-price5" class="live-text" contenteditable="true">2 350,00</span>
+            <span id="lv-item-currency" class="live-text" contenteditable="true">USD&#10;USD&#10;USD</span>
+            <span id="lv-item-currency2" class="live-text" contenteditable="true">USD</span>
+            <span id="lv-item-currency3" class="live-text" contenteditable="true">USD</span>
+            <span id="lv-item-payment" class="live-text" contenteditable="true">VISA</span>
+            <span id="lv-item-address" class="live-text" contenteditable="true">Your Name&#10;Street Address&#10;ZIP Code, City</span>
+            <span id="lv-item-address2" class="live-text" contenteditable="true">Your Name&#10;Street Address&#10;ZIP Code, City</span>
+          </div>
+
+          <div id="harrods-layer" style="display:none;">
+            <span id="pos-item-harrods-program" class="live-text" contenteditable="true">Open Monday - Saturday until 9pm</span>
+            <span id="pos-item-harrods-program2" class="live-text" contenteditable="true">Sunday - 11:30am - 6pm</span>
+            <span id="pos-item-harrods-program3" class="live-text" contenteditable="true">(browsing only between 11:30am - noon)</span>
+            <span id="pos-item-harrods-barcode" class="live-text" contenteditable="true">0000057328492041736512894</span>
+            <span id="pos-item-harrods-name" class="live-text" contenteditable="true">6416518 TOM FORD</span>
+            <span id="pos-item-harrods-tendered" class="live-text" contenteditable="true">Visa Debit Tendered</span>
+            <span id="pos-item-harrods-name2" class="live-text" contenteditable="true">Lost Cherry Eau de Parfum (100ml)</span>
+            <span id="pos-item-harrods-storename" class="live-text" contenteditable="true">Harrods Limited</span>
+            <span id="pos-item-harrods-storestreet" class="live-text" contenteditable="true">87-135 Brompton Road</span>
+            <span id="pos-item-harrods-city" class="live-text" contenteditable="true">LONDON SW1X 7XL</span>
+            <span id="pos-item-harrods-phone" class="live-text" contenteditable="true">Telephone: 020 7730 1234</span>
+            <span id="pos-item-harrods-vatnumber" class="live-text" contenteditable="true">VAT Number: 629273423</span>
+            <span id="pos-item-harrods-price" class="live-text" contenteditable="true">$390.00</span>
+            <span id="pos-item-harrods-price2" class="live-text" contenteditable="true">$390.00</span>
+            <span id="pos-item-harrods-price3" class="live-text" contenteditable="true">$390.00</span>
+            <span id="pos-item-harrods-price4" class="live-text" contenteditable="true">$390.00</span>
+            <span id="pos-item-harrods-date" class="live-text" contenteditable="true">06/04/26 14:00</span>
+            <span id="pos-item-harrods-sku" class="live-text" contenteditable="true">NT1302-170029</span>
+            <span id="pos-item-harrods-clerk" class="live-text" contenteditable="true">Melissa</span>
+            <span id="pos-item-harrods-card" class="live-text" contenteditable="true">Visa Debit</span>
+            <span id="pos-item-harrods-digits" class="live-text" contenteditable="true">5827</span>
+            <span id="pos-item-harrods-authcode" class="live-text" contenteditable="true">061298</span>
+            <span id="pos-item-harrods-merchant" class="live-text" contenteditable="true">***00262</span>
+            <span id="pos-item-harrods-terminal" class="live-text" contenteditable="true">***0353</span>
+            <span id="pos-item-harrods-panseq" class="live-text" contenteditable="true">00</span>
+            <span id="pos-item-harrods-aid" class="live-text" contenteditable="true">A0000000031010</span>
+            <span id="pos-item-harrods-crypto" class="live-text" contenteditable="true">40/1A660B845CB0FFC3</span>
+            <span id="pos-item-harrods-rewards" class="live-text" contenteditable="true">5712</span>
+          </div>
+
+          <div id="prada-layer" style="display:none;">
+            <span id="prada-pos-item-name" class="live-text" contenteditable="true">PRADA EXPLORE MEDIUM NAPPA&#10;LEATHER SHOULDER BAG</span>
+            <span id="prada-pos-item-storename" class="live-text" contenteditable="true">Prada Bellevue</span>
+            <span id="prada-pos-item-storestreet" class="live-text" contenteditable="true">11111 Northeast 8th Street</span>
+            <span id="prada-pos-item-storecity" class="live-text" contenteditable="true">Bellevue</span>
+            <span id="prada-pos-item-storezip" class="live-text" contenteditable="true">WA 98004</span>
+            <span id="prada-pos-item-invoice" class="live-text" contenteditable="true">Inv. 10114958205</span>
+            <span id="prada-pos-item-phone" class="live-text" contenteditable="true">Tel. (425) 637-5820</span>
+            <span id="prada-pos-item-date" class="live-text" contenteditable="true">03/15/2026, 3:26:19 PM</span>
+            <span id="prada-pos-item-document" class="live-text" contenteditable="true">DOCUMENT # 1881-0604</span>
+            <span id="prada-pos-item-price" class="live-text" contenteditable="true">$3,750.00</span>
+            <span id="prada-pos-item-subtotal" class="live-text" contenteditable="true">$3,750.00</span>
+            <span id="prada-pos-item-tax" class="live-text" contenteditable="true">$386.25</span>
+            <span id="prada-pos-item-totalamt" class="live-text" contenteditable="true">$4,136.25</span>
+            <span id="prada-pos-item-card" class="live-text" contenteditable="true">5942</span>
+            <span id="prada-pos-item-date2" class="live-text" contenteditable="true">03/15/2026 15:26 PM</span>
+            <span id="prada-pos-item-reference" class="live-text" contenteditable="true">7104917502384619</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: auto; padding-top: 20px;">
+      <button id="primaryGenBtn" class="btn btn-primary" onclick="processThermalExport()">Generate Receipt</button>
+      <div id="printInstructions" style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 10px; display: none;"></div>
+    </div>
+  </div>
 </div>
 
 <!-- Main Form Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <button class="close-btn" onclick="closeModal()">×</button>
-    <h2 id="modalTitle" style="color: #fff;">Brand Details</h2>
+    <h2 id="modalTitle" style="color:#fff; margin-top:0;">Brand Details</h2>
     <form id="receiptForm">
       <input type="hidden" id="selectedBrand" name="brand">
       <div id="dynamicFields"></div>
@@ -1020,1307 +583,18 @@
   </div>
 </div>
 
+<!-- Upsell Modal -->
 <div class="modal-overlay" id="upsellModalOverlay">
   <div class="modal-box" style="text-align: center; width: 400px;">
     <button class="close-btn" onclick="closeUpsell()">×</button>
     <h2 style="margin-bottom: 10px; color: #fff;">Unlock Full Access</h2>
-    <p style="color: var(--text-muted); margin-bottom: 20px;">
-      Get lifetime access to theden receipt generator and remove watermarks.
-    </p>
-    
-    <div style="font-size: 42px; font-weight: 800; color: #fff; margin-bottom: 10px;">
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Get lifetime access to theden and remove watermarks.</p>
+    <div style="font-size: 42px; font-weight: 800; color: #fff; margin-bottom: 20px;">
       $10.00 <span style="font-size: 18px; color: var(--text-muted); font-weight: 400;">USD</span>
     </div>
-    
-    <!-- Generic Payment Button - Replace href with your checkout link -->
-    <a href="https://discord.gg/FPp9cEq3Y9" target="_blank" class="btn btn-primary" style="display: block; text-decoration: none;">
-      Purchase Access
-    </a>
-    
-    <p style="font-size: 12px; color: #555; margin-top: 20px;">
-      Payment gateway integration required.
-    </p>
+    <button onclick="openCheckout(this)" class="btn btn-primary" style="margin-top: 0;">Purchase Access</button>
   </div>
 </div>
 
+<script src="https://sellauth.com/assets/js/sellauth-embed-2.js"></script>
 <script>
-  // --- CORE LOGIC (Preserved) ---
-
-  // Brand Data (The Full List)
-  const currencyOptions = [
-    'USD - US Dollar', 'EUR - Euro', 'GBP - British Pound', 'JPY - Japanese Yen', 
-    'AUD - Australian Dollar', 'CAD - Canadian Dollar', 'CHF - Swiss Franc', 
-    'CNY - Chinese Yuan', 'SEK - Swedish Krona', 'NOK - Norwegian Krone', 
-    'DKK - Danish Krone', 'PLN - Polish Zloty', 'CZK - Czech Koruna', 
-    'HUF - Hungarian Forint', 'RON - Romanian Leu', 'BGN - Bulgarian Lev', 
-    'ISK - Icelandic Króna', 'RSD - Serbian Dinar', 'BAM - Bosnian Mark', 
-    'ALL - Albanian Lek', 'MKD - Macedonian Denar', 'MDL - Moldovan Leu',
-    'UAH - Ukrainian Hryvnia', 'RUB - Russian Ruble', 'TRY - Turkish Lira', 
-    'MXN - Mexican Peso', 'INR - Indian Rupee', 'ZAR - South African Rand', 
-    'BRL - Brazilian Real'
-  ];
-
-  const brandFields = {
-    stockx: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: 'productImage', label: 'Product Image (URL)', type: 'text' },
-      { id: 'sku', label: 'Style ID', type: 'text' },
-      { id: 'size', label: 'Size', type: 'text' },
-      { id: 'purchasePrice', label: 'Purchase Price', type: 'number' },
-      { id:shippingFee', label: 'Shipping Fee', type: 'number', isPrice: true },
-      { id: 'salesTax', label: 'Sales Tax', type: 'number', isPrice: true },
-      { id: 'orderNumber', label: 'Order Number', type: 'text', placeholder: 'e.g. 47196039-40159634' },
-      { id: 'deliveryDate', label: 'Date of Delivery', type: 'text', placeholder: 'e.g. March 15, 2026' },
-      { id: 'customerEmail', label: 'Delivery Email Address', type: 'email' }
-    ],
-    apple: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: 'productImage', label: 'Product Image (URL)', type: 'text' },
-      { id: 'purchasePrice', label: 'Purchase Price', type: 'number' },
-      { id: 'orderNumber', label: 'Order Number', type: 'text', placeholder: 'e.g. W7150743374' },
-      { id: 'orderDate', label: 'Order Date', type: 'text', placeholder: 'DD/MM/YYYY' },
-      { id: 'fullName', label: 'Name & Surname', type: 'text' },
-      { id: 'streetAddress', label: 'Street Address', type: 'text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: 'city', label: 'City', type: 'text', placeholder: 'e.g. Thale' },
-      { id: 'zipCode', label: 'ZIP Code', type: 'text', placeholder: 'e.g. 06502' },
-      { id: 'country', label: 'Country', type: 'text', placeholder: 'e.g. Germany' },
-      { id: 'customerEmail', label: 'Delivery Email Address', type: 'email' }
-    ],
-    goat: [
-      { id: 'goatCategory', label: 'Category', type: 'select', options: ['Sneakers', 'Apparel'] },
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: 'brandName', label: 'Brand Name', type: 'text', placeholder: 'e.g. Air Jordan' },
-      { id: 'productImage', label: 'Product Image (URL)', type: 'text' },
-      { id: 'sku', label: 'Style ID (SKU)', type: 'text' },
-      { id: 'size', label: 'Size', type: 'text' },
-      { id: 'color', label: 'Color', type: 'text', specificTo: 'Apparel' },
-      { id: 'purchasePrice', label: 'Purchase Price', type: 'number' },
-      { id: 'tax', label: 'Tax', type: 'number', isPrice: true },
-      { id: 'shippingFee', label: 'Shipping Fee', type: 'number', isPrice: true },
-      { id: 'orderNumber', label: 'Order Number', type: 'text', placeholder: 'e.g. 7106938306' },
-      { id: 'fullName', label: 'Name & Surname', type: 'text' },
-      { id: 'streetAddress', label: 'Street Address', type: 'text', placeholder: 'e.g. 123 GOAT Ave' },
-      { id: 'city', label: 'City', type: 'text', placeholder: 'e.g. Los Angeles' },
-      { id: 'zipCode', label: 'ZIP Code', type: 'text', placeholder: 'e.g. 90210' },
-      { id: 'country', label: 'Country', type: 'text', placeholder: 'e.g. USA' },
-      { id: 'shoeCondition', label: 'Shoe Condition', type: 'select', options: ['New', 'Good Condition', 'Used', 'Bad Condition'], specificTo: 'Sneakers' },
-      { id: 'boxCondition', label: 'Box Condition', type: 'select', options: ['Good Condition', 'Badly Damaged', 'No Original Box', 'Missing Lid'], specificTo: 'Sneakers' },
-      { id: 'customerEmail', label: 'Delivery Email Address', type: 'email' }
-    ],
-    zalando: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: 'brandName', label: 'Brand Name', type: 'text', placeholder: 'e.g. Air Jordan' },
-      { id: 'productImage', label: 'Product Image (URL)', type: 'text' },
-      { id: 'size', label: 'Size', type: 'text' },
-      { id: 'purchasePrice', label: 'Purchase Price', type: 'number' },
-      { id: 'shippingFee', label: 'Shipping Fee', type: 'number', isPrice: true },
-      { id: 'orderDate', label: 'Order Date', type: 'text', placeholder: 'e.g. Mon, 11 May 2026' },
-      { id: 'deliveryDate', label: 'Delivery Date', type: 'text', placeholder: 'e.g. Wed, 13 May 2026 - Thu, 14 May 2026' },
-      { id: 'orderNumber', label: 'Order Number', type: 'text', placeholder: 'e.g. 7106938306' },
-      { id: fullName', label: 'Name & Surname', type: 'text' },
-      { id:streetAddress, label: 'Street Address', type: 'text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: 'text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text, placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text, placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    farfetch: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: 'brandName', label: 'Brand Name', type: 'text', placeholder: 'e.g. Air Jordan' },
-      { id: 'productImage', label: 'Product Image (URL)', type: 'text' },
-      { id: 'purchasePrice', label: 'Purchase Price', type: 'number' },
-      { id: 'shippingFee', label: 'Shipping Fee', type: 'number', isPrice: true },
-      { id: 'tax', label: 'Tax', type: 'number', isPrice: true },
-      { id: 'orderDate', label: 'Estimated Delivery (1)', type: 'text', placeholder: 'e.g. 24/03/2026' },
-      { id: 'deliveryDate', label: 'Estimated Delivery (2)', type: 'text', placeholder: 'e.g. 26/03/2026' },
-      { id: orderNumber, label: 'Order Number', type: 'text', placeholder: 'e.g. 5019582' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: streetAddress, label: 'Street Address', type: 'text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text, placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    ebay: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: 'productImage', label: 'Product Image (URL)', type: 'text' },
-      { id: sku, label: 'Item ID (SKU)', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number, isPrice: true },
-      { id: deliveryDate, label: 'Estimated Delivery Date', type: text, placeholder: 'e.g. Tue, 21 Apr - Mon, 27 Apr' },
-      { id: orderNumber, label: 'Order Number', type: 'text', placeholder: 'e.g. 05-40186-25492' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    louisvuitton: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: sku, label: 'Item ID (SKU)', type: text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: deliveryDate, label: 'Estimated Delivery Date', type: text, placeholder: 'e.g. 20/03 and 21/03' },
-      { id: orderNumber, label: 'Order Number', type: 'text', placeholder: 'e.g. nx719506247' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: streetAddress, label: 'Street Address', type: 'text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: 'text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    dyson: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: shippingFee, label: 'Shipping Fee', type: number, isPrice: true },
-      { id: orderNumber, label: 'Order Number', type: 'text', placeholder: 'e.g. 5910642734' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    balenciaga: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: 'text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: orderNumber, label: 'Order Number', type: 'text', placeholder: 'e.g. F1BAUSO102570976' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: streetAddress, label: 'Street Address', type: 'text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    grailed: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: 'brandName', label: 'Brand Name', type: 'text', placeholder: 'e.g. Air Jordan' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: streetAddress, label: 'Street Address', type: 'text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: 'text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: 'text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    moncler: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: 'text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. 25 April 2026' },
-      { id: deliveryDate, label: 'Estimated Delivery Dates', type: text', placeholder: 'e.g. 29 April 2026 and 30 April 2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 10007413549' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    selfridges: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: brandName, label: 'Brand Name', type: text', placeholder: 'e.g. Air Jordan' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Item ID (SKU)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number, isPrice: true },
-      { id: orderDate, label: 'Order Date', type: text, placeholder: 'e.g. 11-04-2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 630521634' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. 87-135 Brompton Road' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. London' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. SW1X 7XL' },
-      { id: phone, label: 'Phone', type: text', placeholder: 'e.g. +44 20 7730 1234' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    amazon: [
-      { id: productName, label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: deliveryDate, label: 'Delivery Date', type: text', placeholder: 'Monday, 13 April' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 811-5719680-9550' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: storeName, label: 'Store Name', type: text', placeholder: 'e.g. Best Buy Vaudreuil-Dorion' },
-      { id: storeStreetAddress, label: 'Store Street Address', type: text', placeholder: 'Vaudreuil-Dorion' },
-      { id: city, label: 'Store City', type: text', placeholder: '3090 Boul. De La Gare' },
-      { id: zipCode, label: 'Store ZIP Code', type: text', placeholder: 'e.g. QC J7V0H1' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    viviennewestwood: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice: true },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. 15/04/2026' },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: 'e.g. VW-VW0001353429' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: 'text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    flannels: [
-      { id: productName, label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. 10 March 2026' },
-      { id: deliveryDate, label: 'Delivery Date', type: text', placeholder: 'e.g. 13 March 2026' },
-      { id: orderNumber, label: 'orderNumber', type: text', placeholder: 'e.g. FLAN800000031763890' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    mrporter: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: brandName, label: 'Brand Name', type: text', placeholder: 'e.g. Bottega Veneta' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: shippingFee, label: 'Shipping Fee', type: number, isPrice: true },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 83ND5721QA94027' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: 'text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    dior: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. DL21840502 ' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    nike: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: 'number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. Mar 24, 2026' },
-      { id: deliveryDate, label: 'Estimated Delivery Date', type: text', placeholder: 'e.g. Mar 29, 2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. C105311759 ' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    kickgame: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice: true },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. 15/04/2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 61591750' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    hermes: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. 15/04/2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 61591750' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    vinted: [
-      { id: 'productName', label: 'Listing Name', type: text' },
-      { id: 'customerEmail', label: 'Delivery Email Address', type: email' }
-    ],
-    rickowens: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice: true },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. 15/04/2026 12:43:07' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. R21566839' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    saintlaurent: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number, isPrice: true },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. YSL2849291' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text, placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    pandora: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: metal, label: 'Metal', type: 'text', placeholder: 'e.g. Gold' },
-      { id: size, label: 'Size', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number, isPrice: true },
-      { id: orderDate, label: 'order Date', type: text', placeholder: 'e.g. 15-04-2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. PND71590418' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: 'e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    sp5der: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice: true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice: true },
-      { id: orderNumber, label: 'orderNumber', type: text', placeholder: 'e.g. SP18594025' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: 'e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    tnf: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: 'e.g. 15/04/2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 51960259' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    gucci: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'VAT', type: number, isPrice: true },
-      { id: deliveryDate, label: 'Estimated Delivery Date', type: text, placeholder: 'e.g. 10 Nov' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. EU819503715' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40 },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    harrods: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: brandName, label: 'Brand Name', type: text', placeholder: 'e.g. Air Jordan' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: deliveryDate, label: 'Estimated Delivery Date', type: text', placeholder: 'e.g. 29/04/2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 1500819503' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    bestbuy: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number, isPrice: true },
-      { id: deliveryDate, label: 'Estimated Delivery Date', type: text', placeholder: e.g. Tuesday, March 10 },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. BB12-58494955839' },
-      { id: fullName, label: 'Name & Surname', type: 'text' },
-      { id: storeName, label: 'Store Name', type: text', placeholder: 'e.g. Best Buy Vaudreuil-Dorion' },
-      { id: storeStreetAddress, label: 'Store Street Address', type: text', placeholder: 'Vaudreuil-Dorion' },
-      { id: city, label: 'Store City', type: text', placeholder: 'Vaudreuil-Dorion' },
-      { id: zipCode, label: 'Store ZIP Code', type: text', placeholder: 'e.g. QC J7V0H1' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    prada: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. EU1758950257' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    canadagoose: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: vatRate, label: 'VAT Rate (%)', type: number' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. CGEU_A17598329' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    burberry: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: deliveryDate, label: 'Date of Delivery', type: text', placeholder: 'e.g. Monday, 16 March 2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: 'e.g. 71940582' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    yzygap: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: 'e.g. HB79261503463' },
-      { id: trackingNumber, label: 'Tracking Number', type: text', placeholder: 'e.g. 74015947155' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    stussy: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number, isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: 'e.g. 6917309371' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    ssense: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: brandName, label: 'Brand Name', type: text', placeholder: 'e.g. Air Jordan' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderDate, label: 'Order Date', type: text, placeholder: 'e.g. April 13, 2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: e.g. 9284971061133' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: 'e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: 'e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    brokenplanet: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: 'e.g. 683720' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany },
-      { id: customerEmail, label: 'Delivery Email Address', type: email }
-    ],
-    arcteryx: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: orderDate, label: 'Order Date', type: 'text', placeholder: e.g. January 10, 2026 },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: e.g. 683720' },
-      { id: trackingNumber, label: 'Tracking Number', type: text', placeholder: e.g. 1Z76419764137012' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    bape: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: e.g. LE305-57-32469' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    flightclub: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: e.g. 91752047' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    trapstar: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'order Number', type: 'text', placeholder: e.g. TS910041859' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502 },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    bstn: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: brandName, label: 'Brand Name', type: 'text', placeholder: e.g. Air Jordan' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: e.g. 23.04.2026, 16:29' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: e.g. 120058185940' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: 'text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: phoneNo, label: 'Phone No.', type: text', placeholder: e.g. 505-000-1234' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    notino: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: text', placeholder: e.g. 100ml' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: e.g. 5819404510' },
-      { id: storeName, label: 'Store Name', type: 'text', placeholder: e.g. Notino Warszawa – Blue City' },
-      { id: storeStreetAddress, label: 'Store Street Address', type: text', placeholder: 'Al. Jerozolim 179' },
-      { id: zipCode, label: 'Store ZIP Code', type: text', placeholder: e.g. 02-222' },
-      { id: city, label: 'Store City', type: text', placeholder: 'Warszawa' },
-      { id: phone, label: 'Store Phone', type: text', placeholder: e.g. +48 5819404510' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    bayern: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: sku, label: 'Product ID (SKU)', type: text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderDate, label: 'Order Date', type: text', placeholder: e.g. 15.05.2026' },
-      { id: orderNumber, label: 'Order Number', type: text', placeholder: e.g. 5819404510' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    plug: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: e.g. 141859' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    corteiz: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: text' },
-      { id: size, label: 'Size', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: e.g. 15709602 ' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    stanley: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: tax, label: 'Tax', type: number', isPrice:true },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'order Number', type: text', placeholder: e.g. 15709602 ' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'City', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    legitapp: [
-      { id: 'productName', label: 'Product Name', type: 'text' },
-      { id: orderDate, label: 'Submit Date & Hour', type: text', placeholder: e.g. 2026-05-01 10:20 AM UTC' },
-      { id: deliveryDate, label: 'Completion Date & Hour', type: text', placeholder: e.g. 2026-05-01 11:14 AM UTC' },
-      { id: orderNumber, label: 'Authentication Number', type: 'text', placeholder: e.g. 1826742500435949' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-    footshop: [
-      { id: 'productName', label: 'Product Name', type: text' },
-      { id: productImage, label: 'Product Image (URL)', type: 'text' },
-      { id: size, label: 'Size', type: text' },
-      { id: color, label: 'Color', type: 'text' },
-      { id: purchasePrice, label: 'Purchase Price', type: number' },
-      { id: shippingFee, label: 'Shipping Fee', type: number', isPrice:true },
-      { id: orderNumber, label: 'orderNumber', type: text', placeholder: e.g. 15709602 ' },
-      { id: fullName, label: 'Name & Surname', type: text' },
-      { id: streetAddress, label: 'Street Address', type: text', placeholder: e.g. Willi-Bredel-Ring 40' },
-      { id: city, label: 'city', type: text', placeholder: e.g. Thale' },
-      { id: zipCode, label: 'ZIP Code', type: text', placeholder: e.g. 06502' },
-      { id: country, label: 'Country', type: text', placeholder: e.g. Germany' },
-      { id: phoneNo, label: 'Phone No.', type: text', placeholder: e.g. 505-000-1234' },
-      { id: customerEmail, label: 'Delivery Email Address', type: email' }
-    ],
-
-    // ... (I've kept the full brand list logic in the HTML grid section below)
-  };
-
-  // --- LOGIC --- //
-
-  const modal = document.getElementById('modalOverlay');
-  const dynamicFields = document.getElementById('dynamicFields');
-  const modalTitle = document.getElementById('modalTitle');
-  const selectedBrandInput = document.getElementById('selectedBrand');
-
-  function openModal(brand) {
-      // Brand mapping
-      const brandNames = {
-          'louisvuitton': 'Louis Vuitton',
-          'farfetch': 'FARFETCH',
-          'kickgame': 'Kick Game',
-          'viviennewestwood': 'Vivienne Westwood',
-          'selfridges': 'Selfridges',
-          'stockx': 'StockX',
-          'ebay': 'eBay',
-          'saintlaurent': 'Saint Laurent',
-          'rickowens': 'Rick Owens',
-          'goat': 'GOAT',
-          'dior': 'DIOR',
-          'sp5der': 'SP5DER',
-          'mrporter': 'MR PORTER',
-          'bestbuy': 'Best Buy',
-          'tnf': 'The North Face',
-          'canadagoose': 'Canada Goose',
-          'yzygap': 'YZY GAP',
-          'stussy': 'Stüssy',
-          'ssense': 'SSENSE',
-          'brokenplanet': 'Broken Planet',
-          'arcteryx': "Arc'Teryx",
-          'bape': 'BAPE',
-          'flightclub': 'Flight Club',
-          'trapstar': 'Trapstar',
-          'bstn': 'BSTN',
-          'notino': 'Notino',
-          'bayern': 'FC Bayern',
-          'plug': 'No Sauce The Plug',
-          'legitapp': 'Legit App',
-          'footshop': 'Footshop'
-      };
-
-      let displayTitle = brandNames[brand] || (brand.charAt(0).toUpperCase() + brand.slice(1));
-
-      const modalTitle = document.getElementById('modalTitle');
-      const selectedBrandInput = document.getElementById('selectedBrand');
-
-      if (modalTitle) modalTitle.innerText = displayTitle + ' Receipt';
-      if (selectedBrandInput) selectedBrand.value = brand;
-
-      // Render Form
-      renderFields(brand);
-
-      // Show Modal
-      const modalOverlay = document.getElementById('modalOverlay');
-      if (modalOverlay) {
-          modalOverlay.style.display = 'flex';
-          modalOverlay.querySelector('.modal-box').scrollTop = 0;
-      }
-  }
-
-  function closeModal() { 
-      document.getElementById('modalOverlay').style.display = 'none'; 
-      document.getElementById('successModalOverlay').style.display = 'none'; 
-      document.getElementById('successModalBox').style.display = 'none'; 
-      document.getElementById('limitReachedModalOverlay').style.display = 'none'; 
-      document.getElementById('helpModalOverlay').style.display = 'none'; 
-      document.getElementById('skuHelpModalOverlay').style.display = 'none'; 
-      document.getElementById('closeSuccessModalOverlay').style.display = 'none'; 
-      document.getElementById('dynamicAlertModalOverlay').style.display = 'none'; 
-      document.getElementById('cancelSubModalOverlay').style.display = 'none'; 
-      document.getElementById('limitReachedModalOverlay').style.display = 'none'; 
-      document.getElementById('cancelSuccessModalOverlay').style.display = 'none'; 
-      document.getElementById('closeDynamicAlertModal'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('cancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeHelpModal'); 
-      document.getElementById('skuHelpModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('cancelSuccessModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('cancelSuccessModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('cancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('cancelSuccessModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('cancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReachedModal'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document.getElementById('closeCancelSuccessModal'); 
-      document.getElementById('limitReached'); 
-      document.getElementById('closeSkuHelpModal'); 
-      document.getElementById('closeDynamicAlert'); 
-      document.getElementById('cancelSubModal'); 
-      document id="cancelSubModal" 
-      document.getElementById("cancelSubModalOverlay") 
-      document.getElementById("cancelSubModalOverlay") 
-      document.getElementById("cancelSuccessModal") 
-      document.getElementById("cancelSuccessModal") 
-      document.getElementById("closeSuccessModal") 
-      document.getElementById("cancelSuccessModal") 
-      document.getElementById("cancelSuccessModal") 
-      document.getElementById("closeSuccessModal") 
-      document.getElementById("limitReachedModal") 
-      document.getElementById("limitReachedModal") 
-      document.getElementById("limitReachedModal") 
-      document.getElementById("limitReachedModal") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("limitReached") 
-      document.getElementById("
