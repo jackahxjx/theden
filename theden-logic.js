@@ -974,6 +974,10 @@ function handleGoatCategoryChange() {
 
 // ---- Modal open / close ----
 function openModal(brand) {
+  if (!isUnlocked) {
+    document.getElementById('upsellModalOverlay').style.display = 'flex';
+    return;
+  }
   document.getElementById('modalTitle').innerText = getBrandName(brand) + ' Receipt';
   document.getElementById('selectedBrand').value = brand;
   renderFields(brand);
@@ -991,7 +995,24 @@ function closeUpsell() {
 }
 
 function openLicenseInput() {
-  alert('License key system — connect your backend here.');
+  if (isUnlocked) {
+    alert('✓ Already unlocked!');
+    return;
+  }
+  const key = prompt('Enter your license key:');
+  if (!key) return;
+  KeyAuthApp.init().then(() => {
+    KeyAuthApp.license(key).then(result => {
+      if (result) {
+        isUnlocked = true;
+        localStorage.setItem('theden_key', key);
+        alert('✓ Access granted!');
+      } else {
+        alert('Invalid key.');
+        document.getElementById('upsellModalOverlay').style.display = 'flex';
+      }
+    });
+  }).catch(() => alert('Invalid or expired key.'));
 }
 
 // ---- Form submit ----
