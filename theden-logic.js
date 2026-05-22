@@ -6,38 +6,42 @@
 const BACKEND_URL = 'https://theden-six.vercel.app/api/generate-receipt';
 
 let isUnlocked = false;
+let sessionId = null;
 
-const KeyAuthApp = new KeyAuth({
-  name: "The Den",
-  ownerid: "BoqHHoq9nD",
-  version: "1.0",
-});
+async function keyauthInit() {
+  const res = await fetch(`https://keyauth.win/api/1.3/?type=init&ver=1.0&name=The%20Den&ownerid=BoqHHoq9nD`);
+  const data = await res.json();
+  if (data.success) sessionId = data.sessionid;
+  return data.success;
+}
+
+async function keyauthLicense(key) {
+  if (!sessionId) await keyauthInit();
+  const res = await fetch(`https://keyauth.win/api/1.3/?type=license&key=${encodeURIComponent(key)}&sessionid=${sessionId}&name=The%20Den&ownerid=BoqHHoq9nD`);
+  return await res.json();
+}
 
 function openLicenseInput() {
   if (isUnlocked) { alert('✓ Already unlocked!'); return; }
   const key = prompt('Enter your license key:');
   if (!key) return;
-  KeyAuthApp.init().then(() => {
-    KeyAuthApp.license(key.trim()).then(result => {
-      if (result.success) {
-        isUnlocked = true;
-        localStorage.setItem('theden_key', key.trim());
-        alert('✓ Access granted!');
-      } else {
-        alert(result.message || 'Invalid key.');
-        document.getElementById('upsellModalOverlay').style.display = 'flex';
-      }
-    });
-  }).catch(() => alert('Could not connect to key server.'));
+  keyauthLicense(key.trim()).then(data => {
+    if (data.success) {
+      isUnlocked = true;
+      localStorage.setItem('theden_key', key.trim());
+      alert('✓ Access granted!');
+    } else {
+      alert(data.message || 'Invalid key.');
+      document.getElementById('upsellModalOverlay').style.display = 'flex';
+    }
+  }).catch(() => alert('Could not connect. Try again.'));
 }
 
 window.addEventListener('load', () => {
   const saved = localStorage.getItem('theden_key');
   if (saved) {
-    KeyAuthApp.init().then(() => {
-      KeyAuthApp.license(saved).then(result => {
-        if (result.success) isUnlocked = true;
-      });
+    keyauthLicense(saved).then(data => {
+      if (data.success) isUnlocked = true;
     }).catch(() => {});
   }
 });
