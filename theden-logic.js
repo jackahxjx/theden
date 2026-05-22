@@ -945,12 +945,54 @@ function renderFields(brand) {
       row.appendChild(addon); row.appendChild(inp);
       group.appendChild(row);
 
-    } else {
-      const inp = document.createElement('input');
-      inp.type = field.type; inp.id = field.id; inp.required = true;
-      if (field.placeholder) inp.placeholder = field.placeholder;
-      group.appendChild(inp);
-    }
+    } else if (field.id === 'orderNumber') {
+  const row = document.createElement('div');
+  row.style.display = 'flex'; row.style.gap = '8px';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.id = field.id; inp.required = true;
+  inp.style.flex = '1';
+  if (field.placeholder) inp.placeholder = field.placeholder;
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.textContent = 'Generate';
+  btn.style.cssText = 'padding:0 16px;background:#fff;color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap;';
+  btn.onclick = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    inp.value = Array.from({length:10}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  };
+  row.appendChild(inp); row.appendChild(btn);
+  group.appendChild(row);
+
+} else if (field.id === 'productImage') {
+  const row = document.createElement('div');
+  row.style.display = 'flex'; row.style.gap = '8px';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.id = field.id; inp.required = true;
+  inp.placeholder = 'Paste URL or click Upload →';
+  inp.style.flex = '1';
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.textContent = 'Upload';
+  btn.style.cssText = 'padding:0 16px;background:#fff;color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap;';
+  btn.onclick = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file'; fileInput.accept = 'image/*';
+    fileInput.onchange = () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => inp.value = e.target.result;
+      reader.readAsDataURL(file);
+    };
+    fileInput.click();
+  };
+  row.appendChild(inp); row.appendChild(btn);
+  group.appendChild(row);
+
+} else {
+  const inp = document.createElement('input');
+  inp.type = field.type; inp.id = field.id; inp.required = true;
+  if (field.placeholder) inp.placeholder = field.placeholder;
+  group.appendChild(inp);
+}
 
     container.appendChild(group);
   });
