@@ -6,24 +6,26 @@
 const BACKEND_URL = 'https://theden-six.vercel.app/api/generate-receipt';
 
 let isUnlocked = false;
-let KeyAuthApp;
+const VALID_KEYS = ['DEN-timihw-093sqt-hc25wh-zkkg48-s76j97-v7px7a
+']; // add your real keys here
+
+function openLicenseInput() {
+  if (isUnlocked) { alert('✓ Already unlocked!'); return; }
+  const key = prompt('Enter your license key:');
+  if (!key) return;
+  if (VALID_KEYS.includes(key.trim().toUpperCase())) {
+    isUnlocked = true;
+    localStorage.setItem('theden_key', key.trim().toUpperCase());
+    alert('✓ Access granted!');
+  } else {
+    alert('Invalid key.');
+    document.getElementById('upsellModalOverlay').style.display = 'flex';
+  }
+}
 
 window.addEventListener('load', () => {
-  KeyAuthApp = new KeyAuth(
-    "The Den",
-    "BoqHHoq9nD",
-    "ef841785b9ec5fadc6bd8e92b25ace96b8a74aba9d061f07938b2b5ee16f6caf",
-    "1.0"
-  );
-
   const saved = localStorage.getItem('theden_key');
-  if (saved) {
-    KeyAuthApp.init().then(() => {
-      KeyAuthApp.license(saved).then(result => {
-        if (result) isUnlocked = true;
-      });
-    }).catch(() => {});
-  }
+  if (saved && VALID_KEYS.includes(saved)) isUnlocked = true;
 });
 
 async function openLicenseInput() {
