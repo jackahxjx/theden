@@ -5,6 +5,46 @@
 
 const BACKEND_URL = 'https://theden-six.vercel.app/api/generate-receipt';
 
+const KeyAuthApp = new KeyAuth(
+  "The Den",
+  "BoqHHoq9nD",
+  "ef841785b9ec5fadc6bd8e92b25ace96b8a74aba9d061f07938b2b5ee16f6caf",
+  "1.0"
+);
+
+let isUnlocked = false;
+
+async function openLicenseInput() {
+  if (isUnlocked) return;
+  const key = prompt("Enter your license key:");
+  if (!key) return;
+  try {
+    await KeyAuthApp.init();
+    const result = await KeyAuthApp.license(key);
+    if (result) {
+      isUnlocked = true;
+      localStorage.setItem('theden_key', key);
+      alert('✓ Access granted!');
+    } else {
+      alert('Invalid key.');
+      document.getElementById('upsellModalOverlay').style.display = 'flex';
+    }
+  } catch (err) {
+    alert('Invalid or expired key.');
+  }
+}
+
+window.addEventListener('load', async () => {
+  const saved = localStorage.getItem('theden_key');
+  if (saved) {
+    try {
+      await KeyAuthApp.init();
+      const result = await KeyAuthApp.license(saved);
+      if (result) isUnlocked = true;
+    } catch {}
+  }
+});
+
 // ---- Currency list ----
 const CURRENCIES = [
   'USD','EUR','GBP','JPY','AUD','CAD','CHF','CNY',
