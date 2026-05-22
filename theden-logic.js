@@ -3,7 +3,7 @@
 // Replace the entire <script> block in your HTML with this
 // ============================================================
 
-const BACKEND_URL = 'https://YOUR_BACKEND_URL_HERE/generate-receipt';
+const BACKEND_URL = 'https://theden-six.vercel.app/api/generate-receipt';
 
 // ---- Currency list ----
 const CURRENCIES = [
