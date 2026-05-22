@@ -6,26 +6,40 @@
 const BACKEND_URL = 'https://theden-six.vercel.app/api/generate-receipt';
 
 let isUnlocked = false;
-const VALID_KEYS = ['DEN-timihw-093sqt-hc25wh-zkkg48-s76j97-v7px7a
-']; // add your real keys here
+
+const KeyAuthApp = new KeyAuth({
+  name: "The Den",
+  ownerid: "BoqHHoq9nD",
+  version: "1.0",
+});
 
 function openLicenseInput() {
   if (isUnlocked) { alert('✓ Already unlocked!'); return; }
   const key = prompt('Enter your license key:');
   if (!key) return;
-  if (VALID_KEYS.includes(key.trim().toUpperCase())) {
-    isUnlocked = true;
-    localStorage.setItem('theden_key', key.trim().toUpperCase());
-    alert('✓ Access granted!');
-  } else {
-    alert('Invalid key.');
-    document.getElementById('upsellModalOverlay').style.display = 'flex';
-  }
+  KeyAuthApp.init().then(() => {
+    KeyAuthApp.license(key.trim()).then(result => {
+      if (result.success) {
+        isUnlocked = true;
+        localStorage.setItem('theden_key', key.trim());
+        alert('✓ Access granted!');
+      } else {
+        alert(result.message || 'Invalid key.');
+        document.getElementById('upsellModalOverlay').style.display = 'flex';
+      }
+    });
+  }).catch(() => alert('Could not connect to key server.'));
 }
 
 window.addEventListener('load', () => {
   const saved = localStorage.getItem('theden_key');
-  if (saved && VALID_KEYS.includes(saved)) isUnlocked = true;
+  if (saved) {
+    KeyAuthApp.init().then(() => {
+      KeyAuthApp.license(saved).then(result => {
+        if (result.success) isUnlocked = true;
+      });
+    }).catch(() => {});
+  }
 });
 
 async function openLicenseInput() {
