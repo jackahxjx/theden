@@ -46,34 +46,28 @@ window.addEventListener('load', () => {
   }
 });
 
-async function openLicenseInput() {
-  if (isUnlocked) return;
-  const key = prompt("Enter your license key:");
+afunction openLicenseInput() {
+  if (isUnlocked) { alert('✓ Already unlocked!'); return; }
+  const key = prompt('Enter your license key:');
   if (!key) return;
-  try {
-    await KeyAuthApp.init();
-    const result = await KeyAuthApp.license(key);
-    if (result) {
+  keyauthLicense(key.trim()).then(data => {
+    if (data.success) {
       isUnlocked = true;
-      localStorage.setItem('theden_key', key);
+      localStorage.setItem('theden_key', key.trim());
       alert('✓ Access granted!');
     } else {
-      alert('Invalid key.');
+      alert(data.message || 'Invalid key.');
       document.getElementById('upsellModalOverlay').style.display = 'flex';
     }
-  } catch (err) {
-    alert('Invalid or expired key.');
-  }
+  }).catch(() => alert('Could not connect. Try again.'));
 }
 
-window.addEventListener('load', async () => {
+window.addEventListener('load', () => {
   const saved = localStorage.getItem('theden_key');
   if (saved) {
-    try {
-      await KeyAuthApp.init();
-      const result = await KeyAuthApp.license(saved);
-      if (result) isUnlocked = true;
-    } catch {}
+    keyauthLicense(saved).then(data => {
+      if (data.success) isUnlocked = true;
+    }).catch(() => {});
   }
 });
 
